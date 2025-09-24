@@ -10,9 +10,9 @@ node_modules/
 
 # Build & Compilation Artifacts
 /build
-/dist
+dist/
 /out
-/.next/
+.next/
 generated/
 *.tsbuildinfo
 next-env.d.ts
