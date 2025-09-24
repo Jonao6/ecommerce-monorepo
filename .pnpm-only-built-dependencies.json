@@ -1,0 +1,9 @@
+[
+  "@apollo/protobufjs",
+  "@prisma/client",
+  "@prisma/engines",
+  "esbuild",
+  "bcrypt",
+  "prisma",
+  "sharp"
+]

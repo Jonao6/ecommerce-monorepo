@@ -1,0 +1,26 @@
+{
+  "pages": {
+    "/product/page": [
+      "static/chunks/[root-of-the-server]__cb59379d._.css",
+      "static/chunks/7b084_next_585c426e._.js",
+      "static/chunks/f9d1e_rxjs_dist_esm5_internal_69dc114e._.js",
+      "static/chunks/4b3e1_graphql_e5c9a8c7._.js",
+      "static/chunks/3fc73_@apollo_client_fb09ca5c._.js",
+      "static/chunks/node_modules__pnpm_856f4d0b._.js",
+      "static/chunks/apps_web_src_api_apollo-context_tsx_4ff5bd67._.js",
+      "static/chunks/apps_web_src_app_layout_tsx_2350c770._.js",
+      "static/chunks/node_modules__pnpm_38488834._.js",
+      "static/chunks/apps_web_src_6708d57f._.js",
+      "static/chunks/apps_web_src_app_product_layout_tsx_409d7963._.js",
+      "static/chunks/_0219b44b._.js",
+      "static/chunks/apps_web_src_app_product_page_tsx_782ea3df._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_fa467daa._.js",
+      "static/chunks/7b084_next_dist_compiled_2ce8a309._.js",
+      "static/chunks/7b084_next_dist_client_4048f819._.js",
+      "static/chunks/7b084_next_dist_6e631eda._.js",
+      "static/chunks/61dca_@swc_helpers_cjs_e27e0aca._.js",
+      "static/chunks/apps_web_e69f0d32._.js",
+      "static/chunks/apps_web_a1ad98da._.js"
+    ]
+  }
+}

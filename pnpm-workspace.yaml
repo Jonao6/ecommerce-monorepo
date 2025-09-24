@@ -1,0 +1,27 @@
+packages:
+  - apps/*
+  - infra
+
+catalogs:
+  prisma:
+    prisma: latest
+
+configDependencies:
+  '@pnpm/plugin-types-fixer': 0.1.0+sha512-bLww63gRHi7siYTqFJb5qNdcXadU0jv20Et6z5AryMZ7FlLolbEJOrXLpg8+amQZNHHNW1dfFUBGVw/9ezQbFg==
+
+injectWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@tailwindcss/oxide'
+  - bcrypt
+  - core-js-pure
+  - esbuild
+  - prisma
+  - sharp
+  - unrs-resolver
+
+syncInjectedDepsAfterScripts:
+  - build

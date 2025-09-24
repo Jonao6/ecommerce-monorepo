@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "es2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "esModuleInterop": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "types": ["node", "express"],
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "preserveSymlinks": false,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    },
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

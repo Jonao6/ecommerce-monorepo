@@ -1,0 +1,134 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum DeliveryStatus {
+  preparing
+  shipped
+  delivered
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique @db.VarChar(255)
+  products  Product[]
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  description String?  @db.Text
+  url         String?  @db.Text
+  image       String?  @db.Text
+  colors      Json?
+  sizes       Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  categoryId Int      @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  addresses    Address[]
+  orders       Order[]
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("users")
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  user       User     @relation(fields: [userId], references: [id])
+  street     String   @db.VarChar(255)
+  city       String   @db.VarChar(100)
+  state      String   @db.VarChar(100)
+  postalCode String   @map("postal_code") @db.VarChar(20)
+  country    String   @db.VarChar(100)
+  orders     Order[]
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("addresses")
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      Int         @map("user_id")
+  user        User        @relation(fields: [userId], references: [id])
+  addressId   Int         @map("address_id")
+  address     Address     @relation(fields: [addressId], references: [id])
+  totalAmount Decimal     @map("total_amount") @db.Decimal(10, 2)
+  status      OrderStatus @default(pending)
+  items       OrderItem[]
+  payment     Payment?
+  delivery    Delivery?
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String  @map("product_id") @db.Uuid
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  orderId       Int           @unique @map("order_id")
+  order         Order         @relation(fields: [orderId], references: [id])
+  paymentMethod String        @map("payment_method") @db.VarChar(50)
+  amount        Decimal       @db.Decimal(10, 2)
+  paymentStatus PaymentStatus @default(pending) @map("payment_status")
+  paidAt        DateTime?     @map("paid_at") @db.Timestamptz
+
+  @@map("payments")
+}
+
+model Delivery {
+  id             Int            @id @default(autoincrement())
+  orderId        Int            @unique @map("order_id")
+  order          Order          @relation(fields: [orderId], references: [id])
+  deliveryStatus DeliveryStatus @default(preparing) @map("delivery_status")
+  trackingNumber String?        @map("tracking_number") @db.VarChar(255)
+  deliveredAt    DateTime?      @map("delivered_at") @db.Timestamptz
+
+  @@map("deliveries")
+}

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Jonao/Documents/Projeto/ecommerce-monorepo/node_modules/.pnpm/%40apollo%2Bclient-react-stream_e3caac786fca2dc6f3892c17c4b6e8fe/node_modules/%40apollo/client-react-streaming/src/index.cc.tsx"],"sourcesContent":["\"use client\";\n\nimport * as React from \"react\";\n\nlet RealSimulatePreloadedQuery: typeof import(\"./SimulatePreloadedQuery.cc.js\").default;\nexport const SimulatePreloadedQuery: typeof import(\"./SimulatePreloadedQuery.cc.js\").default =\n  (props) => {\n    if (!RealSimulatePreloadedQuery) {\n      RealSimulatePreloadedQuery = React.lazy(\n        () => import(\"./SimulatePreloadedQuery.cc.js\")\n      );\n    }\n    return <RealSimulatePreloadedQuery {...props} />;\n  };\n"],"names":[],"mappings":";;;;;AAEA,YAAY,WAAW;;;AAEvB,IAAI;AACG,IAAM,yBACX,CAAC,UAAU;IACT,IAAI,CAAC,4BAA4B;QAC/B,sVAAmC,OAAA,EACjC,MAAM,OAAO,gCAAgC;IAEjD;IACA,OAAO,aAAA,GAAA,CAAA,GAAA,oTAAA,CAAA,gBAAA,EAAC,4BAAA;QAA4B,GAAG,KAAA;IAAA,CAAO;AAChD","ignoreList":[0],"debugId":null}}]
+}
