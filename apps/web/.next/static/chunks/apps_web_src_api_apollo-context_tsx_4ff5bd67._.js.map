@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Jonao/Documents/Projeto/ecommerce-monorepo/apps/web/src/api/apollo-context.tsx"],"sourcesContent":["'use client';\n\nimport { HttpLink } from '@apollo/client';\nimport {\n\tApolloNextAppProvider,\n\tApolloClient,\n\tInMemoryCache,\n} from '@apollo/client-integration-nextjs';\n\nfunction makeClient() {\n\tconst httpLink = new HttpLink({\n\t\turi: process.env.NEXT_PUBLIC_GRAPHQL_URI || 'http://localhost:4000/graphql',\n\t});\n\n\treturn new ApolloClient({\n\t\tcache: new InMemoryCache(),\n\t\tlink: httpLink,\n\t});\n}\n\nexport function ApolloContext({ children }: { children: React.ReactNode }) {\n\treturn (\n\t\t<ApolloNextAppProvider makeClient={makeClient}>\n\t\t\t{children}\n\t\t</ApolloNextAppProvider>\n\t);\n}\n"],"names":[],"mappings":";;;AAWO;;AATP;AACA;AAAA;AAHA;;;;AASA,SAAS;IACR,MAAM,WAAW,IAAI,wQAAA,CAAA,WAAQ,CAAC;QAC7B,KAAK,qEAAuC;IAC7C;IAEA,OAAO,IAAI,8SAAA,CAAA,eAAY,CAAC;QACvB,OAAO,IAAI,8SAAA,CAAA,gBAAa;QACxB,MAAM;IACP;AACD;AAEO,SAAS,cAAc,EAAE,QAAQ,EAAiC;IACxE,qBACC,4SAAC,8SAAA,CAAA,wBAAqB;QAAC,YAAY;kBACjC;;;;;;AAGJ;KANgB","debugId":null}}]
-}
