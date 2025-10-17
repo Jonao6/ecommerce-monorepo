@@ -21,6 +21,8 @@
   "dependencies": {
     "@apollo/server": "^5.0.0",
     "@as-integrations/express5": "^1.1.2",
+    "@graphql-tools/merge": "^9.1.1",
+    "@graphql-tools/utils": "^10.9.1",
     "@prisma/client": "^6.16.2",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -31,11 +33,10 @@
     "graphql": "^16.11.0",
     "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
+    "redis": "^5.8.2",
     "stripe": "^18.5.0",
     "ts-node": "^10.9.2",
-    "tsc-esm-fix": "^3.1.2",
-    "@graphql-tools/merge": "^9.1.1",
-    "@graphql-tools/utils": "^10.9.1"
+    "tsc-esm-fix": "^3.1.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

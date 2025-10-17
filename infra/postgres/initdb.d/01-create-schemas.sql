@@ -22,7 +22,7 @@ CREATE TABLE "products" (
 );
 
 CREATE TABLE "users" (
-    "id" SERIAL PRIMARY KEY,
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "email" VARCHAR(255) UNIQUE NOT NULL,
     "password_hash" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -30,7 +30,7 @@ CREATE TABLE "users" (
 
 CREATE TABLE "addresses" (
     "id" SERIAL PRIMARY KEY,
-    "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    "user_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     "street" VARCHAR(255) NOT NULL,
     "city" VARCHAR(100) NOT NULL,
     "state" VARCHAR(100) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE "addresses" (
 
 CREATE TABLE "orders" (
     "id" SERIAL PRIMARY KEY,
-    "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    "user_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     "address_id" INTEGER NOT NULL REFERENCES "addresses"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     "total_amount" DECIMAL(10, 2) NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'pending',

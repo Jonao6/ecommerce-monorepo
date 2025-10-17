@@ -1,14 +1,5 @@
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+import { ProductImage } from '@/components/product/product-grid';
 import { CartItem } from '@/store/cart-store';
-import Image from 'next/image';
-
 interface CartItemsProps {
 	items: CartItem[];
 }
@@ -22,30 +13,19 @@ export const CartItems = ({ items }: CartItemsProps) => {
 	}
 
 	return (
-		<ul>
+		<ul className='flex flex-col w-full gap-8'>
 			{items.map((item) => (
-				<li key={item.id} className="flex flex-row">
-					<Image src={item.url} fill alt={item.name} />
-					<div className="flex flex-col">
-						<div>
-							<p>{item.name}</p>
-							<p>{item.price}</p>
+				<li key={item.id} className="flex flex-row border drop-shadow-xs">
+					<div className='w-80 h-48'>
+						<ProductImage src={item.image} alt={item.name} className='w-full h-full border-r'/>
+					</div>
+					<div className="flex flex-col font-inter w-full h-full px-12 py-8">
+						<div className='flex flex-row justify-between w-full'>
+							<p >{item.name}</p>
+							<p>{`R$${item.price}`}</p>
 						</div>
-						<p>{`Tamanho: ${item.size}`}</p>
-
-						<Select>
-							<SelectTrigger>
-								<SelectValue placeholder="Selecione a quantidade" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectLabel>Quantidade</SelectLabel>
-								{Array.from({ length: 8 }, (_, index) => (
-									<SelectItem key={index + 1} value={String(index + 1)}>
-										{index + 1}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<p className='mb-5'>{`Tamanho: ${item.size}`}</p>
+						<p> {`Quantidade: ${item.quantity}`}</p>
 					</div>
 				</li>
 			))}

@@ -1,26 +1,21 @@
 'use client';
 
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-
 import { totalPrice } from '@/lib/total-price';
 import { useCartStore } from '@/store/cart-store';
 import type { IbgeState } from '../action/get-states';
 import { CheckoutForm } from './form/checkout-form';
 import { OrderSummary } from './ui/cart-order-summary';
 
-const stripePromise = loadStripe(
-	process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-);
 
 interface CartOrderProps {
 	states: IbgeState[];
 }
+const DELIVERY_TAXES_PORCENTAGE = 0.03;
 
 export const CartOrder = ({ states }: CartOrderProps) => {
 	const { items } = useCartStore();
 	const subTotal = totalPrice(items);
-	const delivery = items.length > 0 ? subTotal * 0.03 : 0;
+	const delivery = items.length > 0 ? subTotal * DELIVERY_TAXES_PORCENTAGE : 0;
 	const total = subTotal + delivery;
 	const totalInCents = Math.round(total * 100);
 	if (items.length === 0) {
@@ -39,13 +34,11 @@ export const CartOrder = ({ states }: CartOrderProps) => {
 				</h1>
 			</header>
 			<div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
-				<Elements stripe={stripePromise}>
 					<CheckoutForm
 						states={states}
 						items={items}
 						totalInCents={totalInCents}
-					/>
-				</Elements>
+						/>
 				<aside className="lg-col-span-1">
 					<OrderSummary
 						total={total}

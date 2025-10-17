@@ -11,6 +11,7 @@ import { useCartStore } from '@/store/cart-store';
 import { ShoppingBag, Trash } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './button';
+import Link from 'next/link';
 
 export const HeaderCart = () => {
 	const { items, clear, removeItem } = useCartStore();
@@ -33,15 +34,17 @@ export const HeaderCart = () => {
 									<div className="relative w-12 h-12">
 										<Image
 											fill
-											src={item.url}
+											src={item.image}
 											alt={item.name}
 											className="object-cover rounded-md"
 										/>
 									</div>
 									<div className="flex-1">
-										<Label className="block">{item.name}</Label>
-										<p className="text-sm text-gray-500">
-											{item.quantity}x R$ {item.price.toFixed(2)}
+										<Link href={`/product/${item.id}`} className=' hover:text-zinc-500'>
+											<Label className="block cursor-pointer">{item.name}</Label>
+										</Link>
+										<p className="text-sm text-gray-600">
+											{item.quantity}x R$ {item.price}
 										</p>
 									</div>
 									<Button
@@ -56,12 +59,20 @@ export const HeaderCart = () => {
 							))}
 						</ul>
 
-						<div className="mt-4 border-t pt-2 flex justify-between font-semibold">
+						<div className="mt-4 border-t pt-2 flex justify-between font-semibold font-barlow-semi-condensed  text-lg">
 							<span>Total:</span>
-							<span>R$ {total.toFixed(2)}</span>
+							<span className="tracking-wider">R$ {total.toFixed(2)}</span>
 						</div>
-						<div className="mt-2 flex justify-end">
-							<Button variant="destructive" size="sm" onClick={clear}>
+						<div className="mt-2 flex justify-between font-barlow-semi-condensed">
+							<Button variant="default" size="sm">
+								<Link href={'/checkout'}>Continuar a compra</Link>
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={clear}
+								className="cursor-pointer"
+							>
 								Limpar carrinho
 							</Button>
 						</div>

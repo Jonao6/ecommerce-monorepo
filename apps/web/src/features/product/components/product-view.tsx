@@ -1,9 +1,8 @@
 'use client';
 
-import { PaginationProvider } from '../context/product-context';
+import { PaginationProvider, useProductPaginationContext } from '../context/product-context';
 import { ProductGrid } from '@/components/product/product-grid';
 import { ProductPagination } from './product-pagination';
-import { useProductPagination } from '../hooks/use-product-pagination';
 export const ProductView = () => {
 	return (
 		<PaginationProvider>
@@ -13,11 +12,11 @@ export const ProductView = () => {
 };
 
 const ProductContent = () => {
-	const { products, loading } = useProductPagination();
+	const { products, loading } = useProductPaginationContext();
 	return (
-		<>
+		<div className='mb-6'>
 			<ProductGrid products={products} loading={loading} />
 			<ProductPagination />
-		</>
+		</div>
 	);
 };

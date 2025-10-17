@@ -5,27 +5,27 @@ export const categories: HomeCategoryProps = {
 		{
 			src: '/home/nike-logo.png',
 			alt: 'nike-logo',
-			href: '/products?brand=nike',
+			href: '/category/Nike',
 		},
 		{
 			src: '/home/converse-logo.png',
 			alt: 'converse-logo',
-			href: '/products?brand=converse',
+			href: '/category/Converse',
 		},
 		{
 			src: '/home/adidas-logo.png',
 			alt: 'adidas-logo',
-			href: '/products?brand=adidas',
+			href: '/category/Adidas',
 		},
 		{
 			src: '/home/puma-logo.png',
 			alt: 'puma-logo',
-			href: '/products?brand=puma',
+			href: '/category/Puma',
 		},
 		{
 			src: '/home/fila-logo.png',
 			alt: 'fila-logo',
-			href: '/products?brand=fila',
+			href: '/category/Fila',
 		},
 	],
 };

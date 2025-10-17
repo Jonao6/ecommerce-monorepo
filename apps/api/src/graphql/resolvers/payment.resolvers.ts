@@ -5,9 +5,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const paymentResolvers = {
   Mutation: {
-    createPaymentIntent: async (_, { orderId }, { prisma }) => {
+    createPaymentIntent: async (_, { input }, { prisma }) => {
+      const { orderId } = input
       const order = await prisma.order.findUnique({
-        where: { id: parseInt(orderId) },
+        where: { id: Number(orderId) },
       });
 
       if (!order) {
@@ -15,10 +16,12 @@ export const paymentResolvers = {
       }
 
       const amountInCents = Math.round(parseFloat(order.totalAmount) * 100);
-
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "brl",
+        automatic_payment_methods: {
+          enabled: true,
+        },
         metadata: {
           orderId: order.id.toString(),
         },

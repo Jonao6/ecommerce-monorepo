@@ -6,45 +6,46 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from '@/components/ui/pagination';
-import { usePagination } from '../context/product-context';
+import { useProductPaginationContext } from '../context/product-context';
 
 export const ProductPagination = () => {
-	const { currentPage, totalPages, setCurrentPage } = usePagination();
-
+	const { currentPage, totalPages, setCurrentPage, hasNextPage, hasPreviousPage} = useProductPaginationContext();
 	const handlePrevious = () => {
-		if (totalPages !== 0) {
-			setCurrentPage(Math.max(0, currentPage - 1));
+		if (hasPreviousPage) {
+			setCurrentPage(currentPage - 1);
 		}
 	};
 
 	const handleNext = () => {
-		if (totalPages < currentPage) {
-			setCurrentPage(Math.min(totalPages - 1, currentPage + 1));
+		if (hasNextPage) {
+			setCurrentPage(currentPage + 1);
 		}
 	};
+
+	if(totalPages <= 1) return null;
 
 	return (
 		<Pagination>
 			<PaginationContent>
 				<PaginationItem>
 					<PaginationPrevious
-						onClick={() => handlePrevious}
+						onClick={handlePrevious}
 						aria-label="Página anterior"
 					/>
 				</PaginationItem>
-				{Array.from({ length: totalPages }, (_, i) => i).map((page) => (
+				{Array.from({ length: totalPages }, (_, i) => i+1).map((page) => (
 					<PaginationItem key={page}>
 						<PaginationLink
 							onClick={() => setCurrentPage(page)}
 							isActive={page === currentPage}
 						>
-							{page + 1}
+							{page}
 						</PaginationLink>
 					</PaginationItem>
 				))}
 				<PaginationItem>
 					<PaginationNext
-						onClick={() => handleNext}
+						onClick={handleNext}
 						aria-label="Próxima página"
 					/>
 				</PaginationItem>

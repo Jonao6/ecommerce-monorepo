@@ -8,7 +8,7 @@ import {
 	SheetTrigger,
 } from '@/components/ui/sheet';
 import { useQuery } from '@apollo/client/react';
-import { GET_CATEGORIES } from '../api/get-categories';
+import { GET_CATEGORIES } from '@/api/graphql/get-categories'; 
 import { Button } from '@/components/ui/button';
 import { CategoryQuery, Category } from '../types/category';
 
@@ -17,10 +17,10 @@ export const ProductFilter = () => {
 	if (loading) return <h1>Wait</h1>;
 	return (
 		<Sheet>
-			<SheetTrigger className="font-barlow-semi-condensed text-lg text-secondary bg-foreground py-3 px-20">
+			<SheetTrigger className="font-barlow-semi-condensed text-lg text-secondary bg-foreground py-3 px-20" aria-describedby='product-filter'>
 				FILTRAR
 			</SheetTrigger>
-			<SheetContent side="right" className="px-8">
+			<SheetContent side="right" className="px-8" aria-describedby={"filter-content"} aria-description='filter-by-products'>
 				<SheetHeader>
 					<SheetTitle>Filtrar</SheetTitle>
 				</SheetHeader>

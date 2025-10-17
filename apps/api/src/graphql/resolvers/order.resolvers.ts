@@ -1,4 +1,4 @@
-import { prisma } from "../../lib/index.js";
+import { prisma } from "../../lib/index.js"
 
 export const orderResolvers = {
   Query: {
@@ -8,58 +8,75 @@ export const orderResolvers = {
         where: { id: parseInt(id) },
         include: { items: true },
       }),
-    userOrders: (_, { userId }) =>
+    userOrders: (_, { userId }: { userId: string }) =>
       prisma.order.findMany({
-        where: { userId: parseInt(userId) },
+        where: { userId: userId },
         include: { items: true },
       }),
   },
   Mutation: {
     createOrder: async (_, { input }) => {
-      const { userId, addressId, items } = input;
+      const { userId, addressId, items } = input
 
-      const productPrices = await Promise.all(
-        items.map(async (item) => {
-          const product = await prisma.product.findUnique({
-            where: { id: item.productId },
-          });
-          return Number(product.price) * item.quantity;
-        }),
-      );
+      const productIds = items.map((item) => item.productId)
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, price: true },
+      })
 
-      const totalAmount = productPrices.reduce((sum, price) => sum + price, 0);
+      const totalAmount = products.reduce((sum, product) => {
+        const quantity =
+          items.find((i) => i.productId === product.id)?.quantity || 0
+        return sum + Number(product.price) * quantity
+      }, 0)
 
       const order = await prisma.order.create({
         data: {
-          userId: parseInt(userId),
-          addressId: parseInt(addressId),
+          ...(addressId && { address: { connect: { id: addressId } } }),
           totalAmount,
-          status: "pending",
+          user: {
+            connect: { id: userId },
+          },
         },
-      });
-
+      })
       await Promise.all(
-        items.map((item) =>
-          prisma.orderItem.create({
+        items.map(async (item) => {
+          const product = products.find((p) => p.id === item.productId)
+          if (!product)
+            throw new Error(`Produto ${item.productId} não encontrado`)
+
+          await prisma.orderItem.create({
             data: {
               orderId: order.id,
               productId: item.productId,
               quantity: item.quantity,
-              price: item.price,
+              price: product.price,
             },
-          }),
-        ),
-      );
-
+          })
+        })
+      )
+      await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        paymentMethod: "card",
+        paymentStatus: "pending",
+        amount: totalAmount,
+    },
+  });
       return prisma.order.findUnique({
         where: { id: order.id },
         include: { items: true },
-      });
+      })
     },
     updateOrderStatus: (_, { id, status }) =>
       prisma.order.update({
         where: { id: parseInt(id) },
         data: { status },
+      }),
+    updateOrderAddress: (_, { id, addressId }) =>
+      prisma.order.update({
+        where: { id: parseInt(id) },
+        data: { addressId },
       }),
   },
   Order: {
@@ -77,4 +94,4 @@ export const orderResolvers = {
     product: (parent) =>
       prisma.product.findUnique({ where: { id: parent.productId } }),
   },
-};
+}

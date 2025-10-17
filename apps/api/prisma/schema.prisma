@@ -48,8 +48,8 @@ model Product {
   sizes       Json?
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  categoryId Int      @map("category_id")
-  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int       @map("category_id")
+  category   Category  @relation(fields: [categoryId], references: [id])
 
   orderItems OrderItem[]
 
@@ -57,7 +57,8 @@ model Product {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(255)
   email        String    @unique @db.VarChar(255)
   passwordHash String    @map("password_hash") @db.VarChar(255)
   addresses    Address[]
@@ -68,26 +69,29 @@ model User {
 }
 
 model Address {
-  id         Int      @id @default(autoincrement())
-  userId     Int      @map("user_id")
-  user       User     @relation(fields: [userId], references: [id])
-  street     String   @db.VarChar(255)
-  city       String   @db.VarChar(100)
-  state      String   @db.VarChar(100)
-  postalCode String   @map("postal_code") @db.VarChar(20)
-  country    String   @db.VarChar(100)
-  orders     Order[]
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id           Int      @id @default(autoincrement())
+  userId       String   @map("user_id") @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+  street       String   @db.VarChar(255)
+  streetNumber String   @db.VarChar(255)
+  complements  String   @db.VarChar(255)
+  city         String   @db.VarChar(100)
+  state        String   @db.VarChar(100)
+  neighbor     String   @db.VarChar(255)
+  postalCode   String   @map("postal_code") @db.VarChar(20)
+  country      String   @db.VarChar(100)
+  orders       Order[]
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   @@map("addresses")
 }
 
 model Order {
   id          Int         @id @default(autoincrement())
-  userId      Int         @map("user_id")
+  userId      String      @map("user_id") @db.Uuid
   user        User        @relation(fields: [userId], references: [id])
-  addressId   Int         @map("address_id")
-  address     Address     @relation(fields: [addressId], references: [id])
+  addressId   Int?         @map("address_id")
+  address     Address?     @relation(fields: [addressId], references: [id])
   totalAmount Decimal     @map("total_amount") @db.Decimal(10, 2)
   status      OrderStatus @default(pending)
   items       OrderItem[]
