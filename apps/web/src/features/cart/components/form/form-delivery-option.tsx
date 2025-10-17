@@ -10,6 +10,30 @@ export const FormDeliveryOption = ({
 	deliveryOption,
 	setDeliveryOption,
 }: FormDeliveryOptionProps) => {
+	const addBusinessDays = (date: Date, days: number) => {
+		const result = new Date(date);
+		let addedDays = 0;
+
+		while (addedDays < days) {
+			result.setDate(result.getDate() + 1);
+			const day = result.getDay();
+			if (day !== 0 && day !== 6) addedDays++;
+		}
+
+		return result;
+	};
+
+	const dateToday = new Date();
+	const standardDeliveryDate = addBusinessDays(dateToday, 5);
+
+	const deliveryDateFormatted = standardDeliveryDate.toLocaleDateString(
+		'pt-BR',
+		{
+			day: '2-digit',
+			month: 'long',
+		},
+	);
+
 	return (
 		<section>
 			<h2 className="text-xl font-semibold mb-3 font-barlow-semi-condensed">
@@ -22,7 +46,11 @@ export const FormDeliveryOption = ({
 				name="delivery_method"
 			>
 				<Label
-					className={`flex justify-between items-center border p-4 rounded-lg cursor-pointer transition-all ${deliveryOption === 'scheduled' ? 'border-gray-800 ring-2 ring-gray-800' : 'border-gray-200'}`}
+					className={`flex justify-between items-center border p-4 rounded-lg cursor-pointer transition-all ${
+						deliveryOption === 'scheduled'
+							? 'border-gray-800 ring-2 ring-gray-800'
+							: 'border-gray-200'
+					}`}
 				>
 					<div className="flex flex-col gap-3">
 						<h3 className="font-semibold text-gray-800 ">
@@ -31,18 +59,22 @@ export const FormDeliveryOption = ({
 						<div>
 							<p className="text-sm font-medium text-gray-700">R$30,00</p>
 							<p className="text-sm text-gray-500">
-								Agendamento disponível a partir do dia, 30 de agosto.
+								{`Agendamento disponível a partir do ${deliveryDateFormatted}.`}
 							</p>
 						</div>
 					</div>
 					<RadioGroupItem value="scheduled" className="ml-4" hidden />
 				</Label>
 				<Label
-					className={`flex justify-between items-center border p-4 rounded-lg cursor-pointer transition-all ${deliveryOption === 'standard' ? 'border-gray-800 ring-2 ring-gray-800' : 'border-gray-200'}`}
+					className={`flex justify-between items-center border p-4 rounded-lg cursor-pointer transition-all ${
+						deliveryOption === 'standard'
+							? 'border-gray-800 ring-2 ring-gray-800'
+							: 'border-gray-200'
+					}`}
 				>
 					<div className="flex flex-col gap-3">
 						<h3 className="font-semibold text-gray-800">
-							Entrega até 16 Julho
+							Entrega até {deliveryDateFormatted}
 						</h3>
 						<div>
 							<p className="text-sm font-medium text-green-600">Grátis</p>

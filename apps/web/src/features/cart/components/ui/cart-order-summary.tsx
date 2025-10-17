@@ -38,7 +38,7 @@ export const OrderSummary = ({
 						<ul>
 							{items.map((item) => (
 								<li key={item.id} className="flex flex-row">
-									<Image src={item.url} fill alt={item.name} />
+									<Image src={item.image} fill alt={item.name} />
 									<div className="flex flex-col">
 										<div>
 											<p>{item.name}</p>

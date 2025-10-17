@@ -11,6 +11,7 @@ export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
 		link: new HttpLink({
 			uri:
 				process.env.NEXT_PUBLIC_GRAPHQL_URI || 'http://localhost:4000/graphql',
+				credentials: "include"
 		}),
 	});
 });

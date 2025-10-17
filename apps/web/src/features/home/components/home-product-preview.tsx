@@ -1,16 +1,17 @@
 'use client';
 
+import { Product, ProductGrid } from '@/components/product/product-grid';
 import { Button } from '@/components/ui/button/button';
+import { GET_PRODUCTS } from '@/features/home/api/get-products';
+import { useQuery } from '@apollo/client/react';
 import { ArrowDown } from 'lucide-react';
 import Link from 'next/link';
-import { GET_PRODUCTS } from '@/api/graphql/get-products';
-import { useQuery } from '@apollo/client/react';
-import { Product, ProductGrid } from '@/components/product/product-grid';
 
 interface GetProductsData {
-	products: Product[];
+	products: {
+		products: Product[];
+	};
 }
-
 interface GetProductsVariables {
 	limit: number;
 }
@@ -25,7 +26,9 @@ export const HomeProductPreview = () => {
 		},
 	);
 
-	const products = data?.products || [];
+	const products: Product[] = data?.products.products || [];
+
+	console.log(products);
 	return (
 		<section className="flex flex-col items-center bg-zinc-300 py-10 px-4">
 			<ProductGrid products={products} />

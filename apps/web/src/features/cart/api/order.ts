@@ -9,3 +9,13 @@ export const CREATE_ORDER_MUTATION = gql`
 		}
 	}
 `;
+
+export const GET_ORDER_BY_ID = gql`
+	query Order($orderId: ID!) {
+		order(id: $orderId) {
+			payment {
+				paymentStatus
+			}
+		}
+	}
+`;

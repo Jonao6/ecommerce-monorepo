@@ -2,12 +2,29 @@ import { prisma } from "../../lib/index.js";
 
 export const productResolvers = {
   Query: {
-    products: (_, { limit, offset }: { limit: number; offset: number }) => {
-      return prisma.product.findMany({
-        take: limit || undefined,
-        skip: offset || 0,
-        orderBy: { createdAt: "desc" },
-      });
+    products: async (_, { limit, offset }: { limit: number; offset: number }) => {
+      const [products, totalCount] = await Promise.all([
+        prisma.product.findMany({
+          skip: offset,
+          take: limit,
+          include: { category: true },
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.product.count(),
+      ])
+      const currentPage = Math.floor(offset / limit) + 1;
+      const totalPages = Math.ceil(totalCount / limit);
+      const hasNextPage = (offset + limit) < totalCount;
+      const hasPreviousPage = offset > 0;
+      
+      return { 
+        products,
+        totalCount,
+        hasNextPage,
+        totalPages,
+        hasPreviousPage,
+        currentPage
+      }
     },
     product: (_, { id }) =>
       prisma.product.findUnique({ where: { id: id } }),

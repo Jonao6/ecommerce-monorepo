@@ -1,13 +1,21 @@
 'use client';
 
 import { useQuery } from '@apollo/client/react';
-import { GET_PRODUCTS } from '@/api/graphql/get-products';
-import { usePagination } from '../context/product-context';
+import { GET_PRODUCTS_PAGINATION } from '../api/get-products';
 import { Product } from '@/components/product/product-grid';
+import { useEffect, useState } from 'react';
+import { useProductPaginationContext } from '../context/product-context';
 
-interface GetProductsData {
+interface ProductsResponse {
 	products: Product[];
-	productsCount: number;
+	currentPage: number;
+	totalCount: number;
+	hasNextPage: boolean;
+	hasPreviousPage: boolean;
+	totalPages: number;
+}
+interface GetProductsData {
+	products: ProductsResponse
 }
 
 interface GetProductsVariable {
@@ -16,29 +24,31 @@ interface GetProductsVariable {
 }
 
 export function useProductPagination() {
-	const { currentPage, pageSize, setTotalPages } = usePagination();
+	const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
-	const { loading, error, data } = useQuery<
+	const { loading, error, data, fetchMore } = useQuery<
 		GetProductsData,
 		GetProductsVariable
-	>(GET_PRODUCTS, {
+	>(GET_PRODUCTS_PAGINATION, {
 		variables: {
 			limit: pageSize,
-			offset: currentPage * pageSize,
+			offset: (currentPage - 1) * pageSize,
 		},
 	});
 
-	const totalCount = data?.productsCount || 0;
-	const calculatedTotalPages = Math.ceil(totalCount / pageSize);
-	setTotalPages(calculatedTotalPages);
-
-	const products = data?.products || [];
+	const productsResponse = data?.products;
 
 	return {
-		products,
-		loading,
-		error,
-		currentPage,
-		pageSize,
+		products: productsResponse?.products || [],
+    loading,
+    error,
+    currentPage: productsResponse?.currentPage || currentPage,
+    totalCount: productsResponse?.totalCount || 0,
+    hasNextPage: productsResponse?.hasNextPage || false,
+    hasPreviousPage: productsResponse?.hasPreviousPage || false,
+    totalPages: productsResponse?.totalPages || 0,
+    setCurrentPage,
+    pageSize,
 	};
 }

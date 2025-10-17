@@ -20,9 +20,6 @@ export const HeroSection = () => {
 				&quot;Lançamentos exclusivos, edições limitadas e os clássicos que nunca
 				saem de moda.&quot;
 			</h2>
-			<Button className="px-3.5 py-8 ring-2 drop-shadow-lg/60 ring-zinc-300 bg-red-800 text-xl font-barlow-semi-condensed font-bold hover:transition hover:delay-75 hover:scale-110 hover:bg-red-900">
-				COMPRE AGORA
-			</Button>
 		</section>
 	);
 };

@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -6,8 +6,9 @@ export interface CartItem {
 	id: string;
 	name: string;
 	price: number;
-	url: string;
+	url?: string;
 	quantity: number;
+	image: string;
 	size: number;
 	color: string;
 }
@@ -25,11 +26,16 @@ export const useCartStore = create<CartState>()(
 			items: [],
 			addItem: (item) =>
 				set((state) => {
-					const exists = state.items.find((i) => i.id === item.id);
+					const exists = state.items.find(
+						(i) =>
+							i.id === item.id &&
+							i.color === item.color &&
+							i.size === item.size,
+					);
 					if (exists) {
 						return {
 							items: state.items.map((i) =>
-								i.id === item.id
+								 i.id === exists.id
 									? { ...i, quantity: i.quantity + item.quantity }
 									: i,
 							),

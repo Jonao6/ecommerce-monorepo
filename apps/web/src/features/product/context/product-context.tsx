@@ -1,42 +1,25 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useProductPagination } from '../hooks/use-product-pagination';
 
-export interface PaginationContextProps {
-	currentPage: number;
-	totalPages: number;
-	setCurrentPage: (page: number) => void;
-	setTotalPages: (pages: number) => void;
-	pageSize: number;
-}
+type ProductPaginationContextType = ReturnType<typeof useProductPagination>;
 
-const PaginationContext = createContext<PaginationContextProps | undefined>(
-	undefined,
-);
+const ProductPaginationContext = createContext<ProductPaginationContextType | null>(null);
 
-export function PaginationProvider({ children }: { children: ReactNode }) {
-	const [currentPage, setCurrentPage] = useState(0);
-	const [totalPages, setTotalPages] = useState(0);
-	const pageSize = 12;
-	return (
-		<PaginationContext.Provider
-			value={{
-				currentPage,
-				totalPages,
-				setCurrentPage,
-				setTotalPages,
-				pageSize,
-			}}
-		>
-			{children}
-		</PaginationContext.Provider>
-	);
-}
+export const PaginationProvider = ({ children }: { children: ReactNode }) => {
+  const pagination = useProductPagination();
+  return (
+    <ProductPaginationContext.Provider value={pagination}>
+      {children}
+    </ProductPaginationContext.Provider>
+  );
+};
 
-export function usePagination() {
-	const context = useContext(PaginationContext);
-	if (context === undefined) {
-		throw new Error('usePagination must be used within a PaginationProvider');
-	}
-	return context;
-}
+export const useProductPaginationContext = () => {
+  const context = useContext(ProductPaginationContext);
+  if (!context) {
+    throw new Error('useProductPaginationContext must be used within a PaginationProvider');
+  }
+  return context;
+};
