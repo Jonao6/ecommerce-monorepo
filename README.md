@@ -155,18 +155,13 @@ ecommerce-monorepo/
 
 ```bash
 # Database
-pnpm db:setup                    # Cria banco de dados PostgreSQL
 pnpm db:migrate                  # Roda migrations do Prisma
-pnpm db:seed                    # Popula banco com dados de exemplo
-pnpm db:studio                   # Abre Prisma Studio
-pnpm db:reset                    # Reseta banco completo (drop + create + migrate + seed)
-pnpm db:shell                   # Abre shell do PostgreSQL
+pnpm db:seed                     # Popula banco com dados de exemplo
 
 # Prisma
 pnpm prisma:generate             # Gera Prisma Client
 pnpm prisma:migrate              # Roda migrations
-pnpm prisma:studio              # Abre Prisma Studio
-pnpm prisma:seed                # Popula banco com dados de exemplo
+pnpm prisma:seed                 # Popula banco com dados de exemplo
 
 # Development
 pnpm dev                        # Inicia API e Web em modo desenvolvimento
