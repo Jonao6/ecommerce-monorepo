@@ -20,9 +20,20 @@
 			}
 		],
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@/testing/*": ["./testing/*"]
 		}
 	},
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+	"include": [
+		"next-env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		"src/types",
+		".next/types/**/*.ts",
+		"./testing/**/*.ts",
+		"src",
+		".storybook/*.ts",
+		"src/types/css.d.ts"
+	],
 	"exclude": ["node_modules"]
 }

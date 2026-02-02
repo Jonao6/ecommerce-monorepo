@@ -1,11 +1,11 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  previewFeatures = ["fullTextSearchPostgres"]
   output   = "./generated/client"
+}
+datasource db {
+  provider = "postgresql"
 }
 
 enum OrderStatus {
@@ -26,8 +26,13 @@ enum DeliveryStatus {
   preparing
   shipped
   delivered
+  returned
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
 model Category {
   id        Int       @id @default(autoincrement())
   name      String    @unique @db.VarChar(255)
@@ -61,10 +66,11 @@ model User {
   name         String    @db.VarChar(255)
   email        String    @unique @db.VarChar(255)
   passwordHash String    @map("password_hash") @db.VarChar(255)
+  role         UserRole  @default(CUSTOMER)
   addresses    Address[]
   orders       Order[]
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
-
+  
   @@map("users")
 }
 
@@ -90,8 +96,8 @@ model Order {
   id          Int         @id @default(autoincrement())
   userId      String      @map("user_id") @db.Uuid
   user        User        @relation(fields: [userId], references: [id])
-  addressId   Int?         @map("address_id")
-  address     Address?     @relation(fields: [addressId], references: [id])
+  addressId   Int?        @map("address_id")
+  address     Address?    @relation(fields: [addressId], references: [id])
   totalAmount Decimal     @map("total_amount") @db.Decimal(10, 2)
   status      OrderStatus @default(pending)
   items       OrderItem[]

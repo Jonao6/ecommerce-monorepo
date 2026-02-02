@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import {
 	NavigationMenu,
 	NavigationMenuItem,
@@ -9,7 +9,7 @@ import {
 import Link from 'next/link';
 
 export interface NavigationLink {
-	name: string
+	name: string;
 }
 
 interface NavigationProps {
@@ -22,7 +22,9 @@ export const Navigation = ({ links }: NavigationProps) => {
 				{links.map((link, index) => (
 					<NavigationMenuItem key={index}>
 						<NavigationMenuLink asChild>
-							<Link href={`/category/${link.name}`}>{link.name.toUpperCase()}</Link>
+							<Link href={`/category/${link.name}`}>
+								{link.name.toUpperCase()}
+							</Link>
 						</NavigationMenuLink>
 					</NavigationMenuItem>
 				))}

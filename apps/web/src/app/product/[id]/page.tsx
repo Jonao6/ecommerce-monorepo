@@ -1,4 +1,4 @@
-import { getClient } from '@/api/apollo';
+import { query } from '@/api/apollo';
 import { GET_PRODUCT_BY_ID } from '@/api/graphql/get-product';
 import { ProductDetail } from '@/features/product/components/product-detail';
 interface category {
@@ -32,14 +32,12 @@ export default async function ProductPage({
 }) {
 	const { id } = await params;
 
-	const { data } = await getClient().query<GetProductData, GetProductVariables>(
-		{
-			query: GET_PRODUCT_BY_ID,
-			variables: {
-				id: id,
-			},
+	const { data } = await query<GetProductData, GetProductVariables>({
+		query: GET_PRODUCT_BY_ID,
+		variables: {
+			id: id,
 		},
-	);
+	});
 
 	if (!data || !data.product) {
 		return <div>Produto não encontrado.</div>;

@@ -1,18 +1,15 @@
 'use client';
+import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Navigation } from '../ui/navigation/navigation';
-import { SearchBar } from '../ui/navigation/search-bar';
 import { HeaderCart } from '../ui/header-cart';
+import { Navigation } from '../ui/navigation/navigation';
 import { UserMenu } from '../ui/user-menu';
-import { useQuery } from '@apollo/client/react';
-import { GET_CATEGORIES } from '@/api/graphql/get-categories';
+import { CategoriesDocument, CategoriesQuery } from '@/gql/graphql';
 
-interface GET_CATEGORIES_DATA {
-	categories: { name: string }[];
-}
-export const Header = () => {
-	const { data } = useQuery<GET_CATEGORIES_DATA>(GET_CATEGORIES);
+export const Header = ({ children }: { children: React.ReactNode }) => {
+	const { data } = useQuery<CategoriesQuery>(CategoriesDocument);
+
 	return (
 		<header className="grid grid-cols-3 grid-rows-1 items-center gap-6 px-14 border-b">
 			<Link href="/">
@@ -22,7 +19,7 @@ export const Header = () => {
 				<Navigation links={data?.categories ?? []} />
 			</div>
 			<div className="flex flex-row justify-end items-center gap-5">
-				<SearchBar />
+				{children}
 				<UserMenu />
 				<HeaderCart />
 			</div>

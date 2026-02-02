@@ -1,72 +1,66 @@
 'use client';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { CartItems } from '@/features/cart/components/ui/cart-items';
+import { MeDocument, MeQuery } from '@/gql/graphql';
 import { totalPrice } from '@/lib/total-price';
 import { useCartStore } from '@/store/cart-store';
-import { DollarSign, LucideBadgeEuro } from 'lucide-react';
-import { CartItems } from './ui/cart-items';
-import Link from 'next/link';
-import { useMutation, useQuery } from '@apollo/client/react';
-import { CREATE_ORDER_MUTATION } from '../api/create-order';
 import { useOrderStore } from '@/store/order-store';
-import { GET_USER } from '../api/get-user';
+import { useQuery } from '@apollo/client/react';
+import { DollarSign, LucideBadgeEuro } from 'lucide-react';
+import Link from 'next/link';
+import { toast, Toaster } from 'sonner';
+import { useCreateOrder } from '../hooks/use-create-order';
 
-interface CreateOrderData {
-	createOrder: {
+export interface MeData {
+	me: {
 		id: string;
 	};
 }
 
-interface CreateOrderVariables {
-	input: {
-		userId: string;
-		items: {
-			productId: string;
-			quantity: number;
-			color: string;
-			size: number;
-		}[];
-		totalAmount: number;
-		shippingAddress?: object;
-		deliveryOption?: string;
-	};
-}
-
-export interface MeData {
-  me: {
-    id: string;
-  };
-}
-
 export const CartCheckout = () => {
 	const { items } = useCartStore();
-	const { data } =  useQuery<MeData>(GET_USER)
-	const userId = data?.me?.id
-	const total = totalPrice(items);
 	const { setOrderId } = useOrderStore();
-	const [createOrder, { loading }] = useMutation<
-		CreateOrderData,
-		CreateOrderVariables
-	>(CREATE_ORDER_MUTATION);
+	const { createOrder, loading: orderLoading } = useCreateOrder();
+	const { data: userData, loading: userLoading } =
+		useQuery<MeQuery>(MeDocument);
+	const userId = userData?.me?.id;
+
+	if (!userId) {
+		toast.error('Falha ao achar o usuário');
+		return;
+	}
+
+	const total = totalPrice(items);
 	const handleCheckout = async () => {
-		if(items.length <= 0) return;
-		const { data } = await createOrder({
-			variables: {
-				input: {
-					userId: userId as string,
-					items: items.map((item) => ({
-						productId: item.id,
-						quantity: item.quantity,
-						color: item.color,
-						size: item.size,
-					})),
-					totalAmount: total,
-				},
-			},
-		});
-		if(data?.createOrder.id) {
-			setOrderId(data.createOrder.id)
+		if (!userId) {
+			toast.error('Usuário não identificado. Aguarde ou faça login.');
+			return;
 		}
+
+		if (items.length === 0) {
+			toast.error('Seu carrinho está vazio.');
+			return;
+		}
+
+		const orderResult = await createOrder({
+			userId,
+			items,
+			total,
+		});
+
+		if (!orderResult.success) {
+			toast.error(orderResult.error.message);
+			return;
+		}
+
+		setOrderId(orderResult.orderId);
+		toast.success('Pedido criado com sucesso!');
 	};
+
+	const isCartEmpty = items.length === 0;
+	const isSubmitDisabled = orderLoading || userLoading || isCartEmpty;
+
 	return (
 		<div className="flex flex-row w-full h-full justify-between px-96 py-12 self-stretch gap-15">
 			<div className="flex-col w-full">
@@ -82,26 +76,35 @@ export const CartCheckout = () => {
 				<ul className="flex flex-col gap-3">
 					<li className="flex flex-row justify-between">
 						<h3>Produtos</h3>
-						<h3>{items.length}</h3>
+						<h3>{(items || []).length}</h3>
 					</li>
 					<li className="flex flex-row justify-between">
 						<h3>Total</h3>
-						<h3>{`R$${total.toFixed(2)}`}</h3>
+						<h3>{`R$${Number(total || 0).toFixed(2)}`}</h3>
 					</li>
 				</ul>
 				<Button
 					className="text-xl mt-20 h-11 w-full px-2"
 					onClick={handleCheckout}
-					disabled={loading}
+					disabled={isSubmitDisabled}
+					aria-disabled={isSubmitDisabled}
 				>
 					<Link
 						href={'/order'}
 						className=" flex flex-row justify-between items-center w-full px-6"
 					>
-						<span className="font-barlow-semi-condensed text-xl">
-							FINALIZAR
-						</span>
-						<DollarSign size={24} />
+						{orderLoading ? (
+							<>
+								<Spinner className="mr-2" />
+							</>
+						) : (
+							<>
+								<span className="font-barlow-semi-condensed text-xl">
+									FINALIZAR
+								</span>
+								<DollarSign size={24} />
+							</>
+						)}
 					</Link>
 				</Button>
 				<div className="mt-3.5">
@@ -111,6 +114,7 @@ export const CartCheckout = () => {
 					<LucideBadgeEuro />
 				</div>
 			</div>
+			<Toaster />
 		</div>
 	);
 };

@@ -1,69 +1,112 @@
 import { GraphQLError } from "graphql"
+import { Context } from "../../server/context.js"
+import { getRedisClient } from "../../redis/client.js"
 import bcrypt from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import crypto from "crypto"
-import { getRedisClient } from "@/redis/client.js"
-import { GraphQLContext } from "../../server/context.js"
+import { Resolvers } from "../types.js"
+import { removeNulls } from "@/utils/cleanInput.js"
+import {
+  requireAuth,
+  requireAdmin,
+  requireOwnershipOrPermission,
+  requirePermission,
+} from "../../utils/auth.js"
+import {
+  validateEmail,
+  validatePassword,
+  validateStringLength,
+  sanitizeHtml,
+} from "../../utils/validation.js"
+import { Permission } from "@/utils/rbac.js"
 
 const SALT_ROUNDS = 10
 
-export const userResolvers = {
+export const userResolvers: Resolvers = {
   Query: {
-    users: async (_: any, __: any, context: GraphQLContext) => {
+    adminUsers: async (_: any, __: any, context: Context) => {
+      requireAdmin(context)
       return context.prisma.user.findMany()
     },
 
-    user: async (
-      _: any,
-      { email }: { email: string },
-      context: GraphQLContext
-    ) => {
-      return context.prisma.user.findUnique({ where: { email } })
+    user: async (_: any, { email }: { email: string }, context: Context) => {
+      const user = requireAuth(context)
+
+      const foundUser = await context.prisma.user.findUnique({
+        where: { email },
+      })
+
+      if (!foundUser) {
+        throw new GraphQLError("User not found", {
+          extensions: { code: "USER_NOT_FOUND" },
+        })
+      }
+
+      requireOwnershipOrPermission(Permission.READ_OWN_PROFILE)(
+        context,
+        foundUser.id,
+      )
+
+      return foundUser
     },
 
-    me: async (_: any, __: any, context: GraphQLContext) => {
-      const cookieHeader = context.req?.headers?.cookie || '';
-  
-      const cookies: Record<string, string> = {};
-       cookieHeader.split(';').forEach(c => {
-      const [key, value] = c.trim().split('=');
-      cookies[key] = value;
-      });
+    me: async (_: any, __: any, context: Context) => {
+      const cookieHeader = context.req?.headers?.cookie || ""
 
-      const token = cookies['accessToken'];
-      if (!token) throw new GraphQLError('UNAUTHORIZED');
+      const cookies: Record<string, string> = {}
+      cookieHeader.split(";").forEach((c) => {
+        const [key, value] = c.trim().split("=")
+        cookies[key] = value
+      })
+      const token = cookies["accessToken"]
+      if (!token) throw new GraphQLError("UNAUTHORIZED")
 
-      const payload = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+      requirePermission(Permission.READ_OWN_PROFILE)(context)
+      const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
       const user = await context.prisma.user.findUnique({
-      where: { id: payload.id },
-      });
+        where: { id: payload.id },
+      })
 
-      if (!user) throw new GraphQLError('UNAUTHORIZED');
-      return user;
-  }
-},
+      if (!user) throw new GraphQLError("UNAUTHORIZED")
+      return user
+    },
+  },
   Mutation: {
     createUser: async (
       _: any,
       { input }: { input: { email: string; password: string; name: string } },
-      context: GraphQLContext
+      context: Context,
     ) => {
+      if (!validateEmail(input.email)) {
+        throw new GraphQLError("Invalid email format", {
+          extensions: { code: "INVALID_EMAIL" },
+        })
+      }
+
+      const passwordValidation = validatePassword(input.password)
+      if (!passwordValidation.isValid) {
+        throw new GraphQLError(passwordValidation.errors.join(", "), {
+          extensions: { code: "INVALID_PASSWORD" },
+        })
+      }
+
+      const sanitizedName = sanitizeHtml(input.name)
+      const validName = validateStringLength(sanitizedName, 2, 100, "name")
+
       const existingUser = await context.prisma.user.findUnique({
         where: { email: input.email },
       })
 
       if (existingUser) {
-        throw new GraphQLError("Usuário já existe", {
+        throw new GraphQLError("User already exists", {
           extensions: { code: "USER_ALREADY_EXISTS" },
         })
       }
-
       const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS)
-
       return context.prisma.user.create({
         data: {
-          name: input.name,
-          email: input.email,
+          name: validName,
+          email: input.email.toLowerCase().trim(),
           passwordHash: hashedPassword,
         },
       })
@@ -72,12 +115,11 @@ export const userResolvers = {
     getUser: async (
       _: any,
       { input }: { input: { email: string; password: string } },
-      context: GraphQLContext
+      context: Context,
     ) => {
       const user = await context.prisma.user.findUnique({
-        where: { email: input.email },
+        where: { email: input.email.toLowerCase() },
       })
-
       if (!user) {
         throw new GraphQLError("Usuário não encontrado", {
           extensions: { code: "USER_NOT_FOUND" },
@@ -92,13 +134,14 @@ export const userResolvers = {
       }
 
       const accessToken = jwt.sign(
-        { id: user.id, email: user.email, name: user.name },
+        { id: user.id, email: user.email, name: user.name, role: user.role },
         process.env.JWT_SECRET!,
-        { expiresIn: "15m" }
+        { expiresIn: "15m" },
       )
 
-      const refreshToken = crypto.randomBytes(40).toString("hex")
       const redis = await getRedisClient()
+
+      const refreshToken = crypto.randomBytes(40).toString("hex")
       await redis.set(`refresh_${refreshToken}`, user.id, {
         EX: 30 * 24 * 60 * 60,
       })
@@ -107,13 +150,15 @@ export const userResolvers = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
+        sameSite: "lax",
+        path: "/",
       })
       context.res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+        path: "/",
       })
 
       return {
@@ -122,7 +167,7 @@ export const userResolvers = {
       }
     },
 
-    logout: async (_: any, __: any, context: GraphQLContext) => {
+    logout: async (_: any, __: any, context: Context) => {
       const refreshToken = context.req.cookies.refreshToken
       if (refreshToken) {
         const redis = await getRedisClient()
@@ -134,37 +179,60 @@ export const userResolvers = {
       return true
     },
 
-    updateUser: async (
-      _: any,
-      { name }: { name: string },
-      context: GraphQLContext
-    ) => {
-      if (!context.user) {
-        throw new GraphQLError("Não autenticado", {
-          extensions: { code: "TOKEN_NOT_FOUND" },
+    updateUser: async (_: any, { input }, context: Context) => {
+      const user = requireAuth(context)
+
+      if (input.email && !validateEmail(input.email)) {
+        throw new GraphQLError("Invalid email format", {
+          extensions: { code: "INVALID_EMAIL" },
         })
       }
 
+      if (input.name) {
+        const sanitizedName = sanitizeHtml(input.name)
+        input.name = validateStringLength(sanitizedName, 2, 100, "name")
+      }
+
+      const dataCleaned = removeNulls(input)
+
       return context.prisma.user.update({
-        where: { id: context.user.id },
-        data: { ...(name && { name }) },
-        include: {
-          addresses: true,
-          orders: true,
+        where: { id: user.id },
+        data: {
+          ...dataCleaned,
         },
       })
     },
-  },
+    deleteUser: async (_: any, { id }, context: Context) => {
+      const user = requireAuth(context)
 
+      requireOwnershipOrPermission(Permission.DELETE_ANY_USER)(context, id)
+
+      const existingUser = await context.prisma.user.findUnique({
+        where: { id },
+      })
+
+      if (!existingUser) {
+        throw new GraphQLError("User not found", {
+          extensions: { code: "USER_NOT_FOUND" },
+        })
+      }
+
+      await context.prisma.user.delete({
+        where: { id },
+      })
+
+      return true
+    },
+  },
   User: {
-    addresses: (parent: any, _: any, context: GraphQLContext) =>
+    addresses: (parent, _, context: Context) =>
       context.prisma.address.findMany({ where: { userId: parent.id } }),
-    orders: (parent: any, _: any, context: GraphQLContext) =>
+    orders: (parent: any, _: any, context: Context) =>
       context.prisma.order.findMany({ where: { userId: parent.id } }),
   },
 
   Address: {
-    user: (parent: any, _: any, context: GraphQLContext) =>
-      context.prisma.user.findUnique({ where: { id: parent.userId } }),
+    user: (parent, _, context: Context) =>
+      context.prisma.user.findUniqueOrThrow({ where: { id: parent.userId } }),
   },
 }

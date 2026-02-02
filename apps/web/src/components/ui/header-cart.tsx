@@ -19,7 +19,7 @@ export const HeaderCart = () => {
 
 	return (
 		<Popover>
-			<PopoverTrigger>
+			<PopoverTrigger aria-label="Abrir carrinho">
 				<ShoppingBag className="size-7 cursor-pointer" />
 			</PopoverTrigger>
 
@@ -30,7 +30,10 @@ export const HeaderCart = () => {
 					<>
 						<ul className="space-y-4 max-h-64 overflow-y-auto pr-2">
 							{items.map((item) => (
-								<li key={item.id} className="flex items-center gap-3">
+								<li
+									key={`${item.id}-${item.size}-${item.color}`}
+									className="flex items-center gap-3"
+								>
 									<div className="relative w-12 h-12">
 										<Image
 											fill
@@ -40,8 +43,13 @@ export const HeaderCart = () => {
 										/>
 									</div>
 									<div className="flex-1">
-										<Link href={`/product/${item.id}`} className=' hover:text-zinc-500'>
-											<Label className="block cursor-pointer">{item.name}</Label>
+										<Link
+											href={`/product/${item.id}`}
+											className=" hover:text-zinc-500"
+										>
+											<Label className="block cursor-pointer">
+												{item.name}
+											</Label>
 										</Link>
 										<p className="text-sm text-gray-600">
 											{item.quantity}x R$ {item.price}

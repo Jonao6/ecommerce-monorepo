@@ -1,34 +1,25 @@
-'use client';
-
 import { Product, ProductGrid } from '@/components/product/product-grid';
 import { Button } from '@/components/ui/button/button';
-import { GET_PRODUCTS } from '@/features/home/api/get-products';
-import { useQuery } from '@apollo/client/react';
 import { ArrowDown } from 'lucide-react';
 import Link from 'next/link';
+import { getProducts } from '../api/get-products';
 
-interface GetProductsData {
-	products: {
-		products: Product[];
-	};
-}
-interface GetProductsVariables {
-	limit: number;
-}
+export const HomeProductPreview = async () => {
+	const response = await getProducts({ limit: 12 });
+	if (!response.success) {
+		throw response.error;
+	}
+	const rawProducts = response.data?.products?.products ?? [];
 
-export const HomeProductPreview = () => {
-	const { data } = useQuery<GetProductsData, GetProductsVariables>(
-		GET_PRODUCTS,
-		{
-			variables: {
-				limit: 9,
-			},
-		},
-	);
+	const products: Product[] = rawProducts.map((product) => ({
+		id: product.id,
+		name: product.name,
+		price: product.price,
+		image: product.image ?? '/placeholder-image.png',
+		description: product.description ?? '',
+		category: product.category,
+	}));
 
-	const products: Product[] = data?.products.products || [];
-
-	console.log(products);
 	return (
 		<section className="flex flex-col items-center bg-zinc-300 py-10 px-4">
 			<ProductGrid products={products} />

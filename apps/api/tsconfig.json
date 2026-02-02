@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2022",
+    "target": "es2023",
     "module": "nodenext",
+    "strict": true,
+    "lib": ["es2023"],
     "moduleResolution": "nodenext",
+    "allowJs": true,
     "esModuleInterop": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true,
     "types": ["node", "express"],
     "skipLibCheck": true,
@@ -20,6 +23,6 @@
       "@/*": ["src/*"],
     },
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "prisma/generated/client/**/*"],
   "exclude": ["node_modules", "dist"]
 }

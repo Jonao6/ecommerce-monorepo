@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import {
+	PaymentElement,
+	useElements,
+	useStripe,
+} from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useOrderStore } from '@/store/order-store';
@@ -11,7 +15,7 @@ export const FormPaymentMethod = () => {
 	const elements = useElements();
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
-	const { orderId } = useOrderStore()
+	const { orderId } = useOrderStore();
 	const handlePayment = async () => {
 		if (!stripe || !elements) return;
 
@@ -28,7 +32,7 @@ export const FormPaymentMethod = () => {
 		if (error) {
 			setMessage(error.message || 'Ocorreu um erro inesperado.');
 		}
-		
+
 		setIsLoading(false);
 	};
 
@@ -41,7 +45,9 @@ export const FormPaymentMethod = () => {
 				<PaymentElement />
 			</div>
 
-			{message && <p className="text-red-500 text-sm font-semibold">{message}</p>}
+			{message && (
+				<p className="text-red-500 text-sm font-semibold">{message}</p>
+			)}
 
 			<Button
 				type="button"

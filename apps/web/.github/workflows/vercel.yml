@@ -1,0 +1,125 @@
+name: CI + Vercel Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  WORKDIR: ./apps/web
+
+jobs:
+  test:
+    name: Lint + Typecheck + Vitest + Playwright
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm next lint
+
+      - name: Typecheck
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm typecheck
+
+      - name: Vitest
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm test
+
+      - name: Install Playwright browsers
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm exec playwright install --with-deps
+
+      - name: Playwright
+        working-directory: ${{ env.WORKDIR }}
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: ${{ env.WORKDIR }}/playwright-report
+          retention-days: 7
+
+  deploy_preview:
+    name: Deploy Preview to Vercel
+    needs: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest
+
+      - name: Pull Vercel env (preview)
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (local) for Vercel
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt (preview)
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy_production:
+    name: Deploy Production to Vercel
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest
+
+      - name: Pull Vercel env (production)
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (local) for Vercel (prod)
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt (prod)
+        working-directory: ${{ env.WORKDIR }}
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
