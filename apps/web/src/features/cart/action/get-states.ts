@@ -1,4 +1,3 @@
-'use server';
 export interface IbgeState {
 	id: number;
 	sigla: string;

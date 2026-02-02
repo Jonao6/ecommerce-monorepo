@@ -6,7 +6,6 @@ import type { IbgeState } from '../action/get-states';
 import { CheckoutForm } from './form/checkout-form';
 import { OrderSummary } from './ui/cart-order-summary';
 
-
 interface CartOrderProps {
 	states: IbgeState[];
 }
@@ -34,11 +33,11 @@ export const CartOrder = ({ states }: CartOrderProps) => {
 				</h1>
 			</header>
 			<div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
-					<CheckoutForm
-						states={states}
-						items={items}
-						totalInCents={totalInCents}
-						/>
+				<CheckoutForm
+					states={states}
+					items={items}
+					totalInCents={totalInCents}
+				/>
 				<aside className="lg-col-span-1">
 					<OrderSummary
 						total={total}

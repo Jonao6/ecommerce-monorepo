@@ -9,7 +9,13 @@ import {
 import { useProductPaginationContext } from '../context/product-context';
 
 export const ProductPagination = () => {
-	const { currentPage, totalPages, setCurrentPage, hasNextPage, hasPreviousPage} = useProductPaginationContext();
+	const {
+		currentPage,
+		totalPages,
+		setCurrentPage,
+		hasNextPage,
+		hasPreviousPage,
+	} = useProductPaginationContext();
 	const handlePrevious = () => {
 		if (hasPreviousPage) {
 			setCurrentPage(currentPage - 1);
@@ -22,7 +28,7 @@ export const ProductPagination = () => {
 		}
 	};
 
-	if(totalPages <= 1) return null;
+	if (totalPages <= 1) return null;
 
 	return (
 		<Pagination>
@@ -33,7 +39,7 @@ export const ProductPagination = () => {
 						aria-label="Página anterior"
 					/>
 				</PaginationItem>
-				{Array.from({ length: totalPages }, (_, i) => i+1).map((page) => (
+				{Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
 					<PaginationItem key={page}>
 						<PaginationLink
 							onClick={() => setCurrentPage(page)}
@@ -44,10 +50,7 @@ export const ProductPagination = () => {
 					</PaginationItem>
 				))}
 				<PaginationItem>
-					<PaginationNext
-						onClick={handleNext}
-						aria-label="Próxima página"
-					/>
+					<PaginationNext onClick={handleNext} aria-label="Próxima página" />
 				</PaginationItem>
 			</PaginationContent>
 		</Pagination>

@@ -1,5 +1,6 @@
-import { gql } from "@apollo/client"
+import { gql } from '@apollo/client';
 export const LOGOUT = gql`
-mutation Mutation {
-  logout
-}`
+	mutation Mutation {
+		logout
+	}
+`;

@@ -1,4 +1,10 @@
-import { mergeTypeDefs } from "@graphql-tools/merge";
-import { allTypeDefs } from "./type-defs.js";
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-export const typeDefs = mergeTypeDefs([allTypeDefs]);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const schemaPath = join(__dirname, 'schema.graphql');
+
+export const typeDefs = readFileSync(schemaPath, 'utf-8');

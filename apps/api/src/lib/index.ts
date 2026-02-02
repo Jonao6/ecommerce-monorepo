@@ -1,3 +1,3 @@
-export { prisma } from "../lib/client.js";
+export { prisma } from "./client.js";
 export * from "../../prisma/generated/client/client.js";
 

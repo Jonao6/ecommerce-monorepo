@@ -4,6 +4,7 @@ module.exports = {
 		'next/typescript',
 		'plugin:@tanstack/query/recommended',
 		'plugin:prettier/recommended',
+		'plugin:storybook/recommended',
 	],
 	plugins: ['check-file', 'prettier'],
 	overrides: [
@@ -43,6 +44,11 @@ module.exports = {
 							{
 								target: './src/features',
 								from: './src/app',
+							},
+							{
+								target: './src/features/search',
+								from: './src/features',
+								except: ['./search'],
 							},
 							{
 								target: [

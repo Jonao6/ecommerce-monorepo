@@ -1,38 +1,61 @@
-import { prisma } from "../../lib/index.js";
-import Stripe from "stripe";
+import { prisma } from "../../lib/index.js"
+import Stripe from "stripe"
+import { Resolvers } from "../types.js"
+import { GraphQLError } from "graphql"
+import { gerenateIdempotencyKey, requireAuth, validateOwnership } from "../../utils/auth.js"
+import { validateId, validatePrice } from "../../utils/validation.js"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-export const paymentResolvers = {
+export const paymentResolvers: Resolvers = {
   Mutation: {
-    createPaymentIntent: async (_, { input }, { prisma }) => {
+    createPaymentIntent: async (_, { input }, context) => {
+      const user = requireAuth(context);
+      
+      if (context.applyRateLimit) {
+        await context.applyRateLimit('PAYMENT');
+      }
+      
       const { orderId } = input
-      const order = await prisma.order.findUnique({
-        where: { id: Number(orderId) },
-      });
+      
+      const validOrderId = validateId(orderId, "orderId");
+      
+      const order = await context.prisma.order.findUnique({
+        where: { id: Number(validOrderId) },
+      })
 
       if (!order) {
-        throw new Error("Pedido não encontrado");
+        throw new GraphQLError("Order not found", {
+          extensions: { code: "ORDER_NOT_FOUND" }
+        });
       }
 
-      const amountInCents = Math.round(parseFloat(order.totalAmount) * 100);
+      validateOwnership(context, order.userId);
+      const idempotencyKey = gerenateIdempotencyKey(order.id)
+      const amountInCents = Math.round(Number(order.totalAmount) * 100)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "brl",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-        metadata: {
-          orderId: order.id.toString(),
-        },
-      });
+        automatic_payment_methods: { enabled: true },
+        metadata: { orderId: orderId.toString() },
+      },
+      {
+        idempotencyKey: idempotencyKey,
+      }
+    )
+      if (!paymentIntent.client_secret) {
+        throw new GraphQLError("Failed to create payment intent", {
+          extensions: { code: "PAYMENT_INTENT_FAILED" }
+        });
+      }
       return {
         clientSecret: paymentIntent.client_secret,
-      };
+      }
     },
   },
   Payment: {
-    order: (parent) =>
-      prisma.order.findUnique({ where: { id: parent.orderId } }),
+    order: (parent) => {
+      return prisma.order.findUniqueOrThrow({ where: { id: parent.orderId } })
+    },
   },
-};
+}

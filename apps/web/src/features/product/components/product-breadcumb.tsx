@@ -8,11 +8,11 @@ import {
 	BreadcrumbItem,
 } from '@/components/ui/breadcrumb';
 
-import useBradcrumb from '../hooks/use-breadcrumbs';
+import useBreadcrumb from '../hooks/use-breadcrumbs';
 import { Fragment } from 'react';
 
 export const ProductBreadcumb = () => {
-	const breadcrumbs = useBradcrumb();
+	const breadcrumbs = useBreadcrumb();
 	return (
 		<Breadcrumb>
 			<BreadcrumbList className="text-lg font-barlow-semi-condensed">

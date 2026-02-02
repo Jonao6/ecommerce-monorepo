@@ -4,7 +4,7 @@ type Breadcrumb = {
 	href: string;
 };
 
-export default function useBradcrumb(): Breadcrumb[] {
+export default function useBreadcrumb(): Breadcrumb[] {
 	const pathName = usePathname();
 
 	const pathSegments = pathName.split('/').filter(Boolean);
@@ -12,7 +12,6 @@ export default function useBradcrumb(): Breadcrumb[] {
 	const breadcumbs = pathSegments.map((segment, index) => {
 		const path = `${pathSegments.slice(0, index + 1).join('')}`;
 
-		console.log(path);
 		const formattedName = segment
 			.replace(/-/g, ' ')
 			.replace(/\b\w/g, (char) => char.toUpperCase());

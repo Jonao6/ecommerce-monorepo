@@ -2,21 +2,23 @@
 
 import { useSearchParams } from 'next/navigation';
 import { CartPayment } from '@/features/cart/components/cart-payment';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function PaymentPage({ params }: { params: { id: string } }) {
+export default function PaymentPage({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
 	const searchParams = useSearchParams();
 	const redirectStatus = searchParams.get('redirect_status');
-	const orderId = params.id;
+	const { id } = React.use(params);
 	const [showPayment, setShowPayment] = useState(false);
 
 	useEffect(() => {
-		if (redirectStatus === 'succeeded' && orderId) {
-			setShowPayment(true);
-		} else if (redirectStatus && redirectStatus !== 'succeeded') {
+		if (redirectStatus && id) {
 			setShowPayment(true);
 		}
-	}, [redirectStatus, orderId]);
+	}, [redirectStatus, id]);
 
 	if (!redirectStatus) {
 		return (
@@ -29,7 +31,7 @@ export default function PaymentPage({ params }: { params: { id: string } }) {
 	return (
 		<main>
 			{showPayment ? (
-				<CartPayment orderId={orderId ?? ''} />
+				<CartPayment orderId={id} />
 			) : (
 				<p>Verificando pagamento...</p>
 			)}
