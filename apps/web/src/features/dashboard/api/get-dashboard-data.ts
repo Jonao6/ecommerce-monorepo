@@ -27,7 +27,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 	}
 
 	const ordersPromise = query<UserOrdersQuery>({
-		query: UserOrdersDocument
+		query: UserOrdersDocument,
 	});
 
 	const addressesPromise = query<UserAddressesQuery>({

@@ -7,7 +7,11 @@ import { getProducts } from '../api/get-products';
 export const HomeProductPreview = async () => {
 	const response = await getProducts({ limit: 12 });
 	if (!response.success) {
-		throw response.error;
+		 return (
+      <section className="flex flex-col items-center bg-zinc-300 py-10 px-4">
+        <p className="text-zinc-600">Não foi possível carregar os produtos.</p>
+      </section>
+    );
 	}
 	const rawProducts = response.data?.products?.products ?? [];
 

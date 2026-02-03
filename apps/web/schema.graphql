@@ -2,262 +2,262 @@ scalar DateTime
 scalar Decimal
 
 type Category {
-  id: ID!
-  name: String!
-  createdAt: String!
-  products: [Product!]!
+	id: ID!
+	name: String!
+	createdAt: String!
+	products: [Product!]!
 }
 
 type Product {
-  id: ID!
-  name: String!
-  price: Decimal!
-  description: String
-  url: String
-  image: String!
-  colors: [String!]
-  sizes: [Int!]
-  category: Category!
-  categoryId: ID
-  createdAt: DateTime!
+	id: ID!
+	name: String!
+	price: Decimal!
+	description: String
+	url: String
+	image: String!
+	colors: [String!]
+	sizes: [Int!]
+	category: Category!
+	categoryId: ID
+	createdAt: DateTime!
 }
 
 type ProductsResponse {
-  products: [Product!]!
-  totalCount: Int!
-  totalPages: Int!
-  currentPage: Int!
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
+	products: [Product!]!
+	totalCount: Int!
+	totalPages: Int!
+	currentPage: Int!
+	hasNextPage: Boolean!
+	hasPreviousPage: Boolean!
 }
 
 type User {
-  id: ID!
-  name: String!
-  email: String!
-  createdAt: String!
-  addresses: [Address!]!
-  orders: [Order!]!
+	id: ID!
+	name: String!
+	email: String!
+	createdAt: String!
+	addresses: [Address!]!
+	orders: [Order!]!
 }
 
 type AuthPayload {
-  message: String!
-  user: User!
+	message: String!
+	user: User!
 }
 
 type Address {
-  id: ID!
-  user: User!
-  street: String!
-  streetNumber: String!
-  city: String!
-  complements: String!
-  neighbor: String!
-  state: String!
-  postalCode: String!
-  country: String!
-  createdAt: String!
+	id: ID!
+	user: User!
+	street: String!
+	streetNumber: String!
+	city: String!
+	complements: String!
+	neighbor: String!
+	state: String!
+	postalCode: String!
+	country: String!
+	createdAt: String!
 }
 
 type OrderItem {
-  id: ID!
-  product: Product!
-  quantity: Int!
-  price: Float!
+	id: ID!
+	product: Product!
+	quantity: Int!
+	price: Float!
 }
 
 type Order {
-  id: ID!
-  user: User!
-  address: Address!
-  items: [OrderItem!]!
-  totalAmount: Float!
-  status: OrderStatus!
-  createdAt: String!
-  payment: Payment
-  delivery: Delivery
+	id: ID!
+	user: User!
+	address: Address!
+	items: [OrderItem!]!
+	totalAmount: Float!
+	status: OrderStatus!
+	createdAt: String!
+	payment: Payment
+	delivery: Delivery
 }
 
 type Payment {
-  id: ID!
-  order: Order!
-  paymentMethod: String!
-  amount: Float!
-  paymentStatus: PaymentStatus!
-  paidAt: String
+	id: ID!
+	order: Order!
+	paymentMethod: String!
+	amount: Float!
+	paymentStatus: PaymentStatus!
+	paidAt: String
 }
 
 type Delivery {
-  id: ID!
-  order: Order!
-  status: DeliveryStatus!
-  trackingNumber: String
-  deliveredAt: String
+	id: ID!
+	order: Order!
+	status: DeliveryStatus!
+	trackingNumber: String
+	deliveredAt: String
 }
 
 type PaymentIntentResponse {
-  clientSecret: String!
+	clientSecret: String!
 }
 
 enum OrderStatus {
-  pending
-  processing
-  shipped
-  delivered
-  cancelled
+	pending
+	processing
+	shipped
+	delivered
+	cancelled
 }
 
 enum PaymentStatus {
-  pending
-  paid
-  failed
+	pending
+	paid
+	failed
 }
 
 enum DeliveryStatus {
-  preparing
-  shipped
-  in_transit
-  delivered
-  returned
+	preparing
+	shipped
+	in_transit
+	delivered
+	returned
 }
 
 input CreateProductInput {
-  name: String!
-  price: Int!
-  description: String
-  categoryId: ID!
-  url: String
-  image: String
-  colors: [String!]
-  sizes: [Int!]
+	name: String!
+	price: Int!
+	description: String
+	categoryId: ID!
+	url: String
+	image: String
+	colors: [String!]
+	sizes: [Int!]
 }
 
 input UpdateProductInput {
-  name: String
-  price: Int
-  description: String
-  categoryId: ID
-  url: String
-  image: String
-  colors: [String!]
-  sizes: [Int!]
+	name: String
+	price: Int
+	description: String
+	categoryId: ID
+	url: String
+	image: String
+	colors: [String!]
+	sizes: [Int!]
 }
 
 input CreateUserInput {
-  name: String!
-  email: String!
-  password: String!
+	name: String!
+	email: String!
+	password: String!
 }
 
 input UpdateUserInput {
-  name: String
-  email: String
+	name: String
+	email: String
 }
 
 input LoginInput {
-  email: String!
-  password: String!
+	email: String!
+	password: String!
 }
 
 input CreateAddressInput {
-  street: String!
-  streetNumber: String!
-  city: String!
-  complements: String!
-  state: String!
-  neighbor: String!
-  postalCode: String!
-  country: String!
+	street: String!
+	streetNumber: String!
+	city: String!
+	complements: String!
+	state: String!
+	neighbor: String!
+	postalCode: String!
+	country: String!
 }
 
 input UpdateAddressInput {
-  street: String
-  city: String
-  state: String
-  postalCode: String
-  country: String
+	street: String
+	city: String
+	state: String
+	postalCode: String
+	country: String
 }
 
 input CreateOrderItemInput {
-  productId: ID!
-  color: String!
-  size: Int!
-  quantity: Int!
+	productId: ID!
+	color: String!
+	size: Int!
+	quantity: Int!
 }
 
 input CreateOrderInput {
-  addressId: ID
-  items: [CreateOrderItemInput!]!
-  totalAmount: Decimal!
+	addressId: ID
+	items: [CreateOrderItemInput!]!
+	totalAmount: Decimal!
 }
 
 input UpdateOrderInput {
-  status: OrderStatus
-  addressId: ID
+	status: OrderStatus
+	addressId: ID
 }
 
 input CreatePaymentIntentInput {
-  orderId: ID!
-  amount: Int!
+	orderId: ID!
+	amount: Int!
 }
 
 type Query {
-  # Categories
-  categories: [Category!]!
-  category(name: String!): Category
+	# Categories
+	categories: [Category!]!
+	category(name: String!): Category
 
-  # Products
-  products(limit: Int = 10, offset: Int = 10): ProductsResponse!
-  product(id: ID!): Product
-  productsByCategory(categoryId: ID!): [Product!]!
-  productsBySearch(term: String!): [Product!]!
+	# Products
+	products(limit: Int = 10, offset: Int = 10): ProductsResponse!
+	product(id: ID!): Product
+	productsByCategory(categoryId: ID!): [Product!]!
+	productsBySearch(term: String!): [Product!]!
 
-  # Users
-  adminUsers: [User!]!
-  user(email: String!): User
-  me: User
+	# Users
+	adminUsers: [User!]!
+	user(email: String!): User
+	me: User
 
-  # Addresses
-  adminAddresses: [Address!]!
-  address(id: ID!): Address
-  userAddresses: [Address!]!
+	# Addresses
+	adminAddresses: [Address!]!
+	address(id: ID!): Address
+	userAddresses: [Address!]!
 
-  # Orders
-  adminOrders: [Order!]!
-  order(id: ID!): Order
-  userOrders: [Order!]!
+	# Orders
+	adminOrders: [Order!]!
+	order(id: ID!): Order
+	userOrders: [Order!]!
 }
 
 type Mutation {
-  # Categories
-  createCategory(name: String!): Category!
-  updateCategory(id: ID!, name: String!): Category!
-  deleteCategory(id: ID!): Boolean!
+	# Categories
+	createCategory(name: String!): Category!
+	updateCategory(id: ID!, name: String!): Category!
+	deleteCategory(id: ID!): Boolean!
 
-  # Products
-  createProduct(input: CreateProductInput!): Product!
-  updateProduct(id: ID!, input: UpdateProductInput!): Product!
-  deleteProduct(id: ID!): Boolean!
+	# Products
+	createProduct(input: CreateProductInput!): Product!
+	updateProduct(id: ID!, input: UpdateProductInput!): Product!
+	deleteProduct(id: ID!): Boolean!
 
-  # Users
-  createUser(input: CreateUserInput!): User!
-  getUser(input: LoginInput!): AuthPayload!
-  logout: Boolean!
-  updateUser(input: UpdateUserInput!): User!
-  deleteUser(id: ID!): Boolean!
+	# Users
+	createUser(input: CreateUserInput!): User!
+	getUser(input: LoginInput!): AuthPayload!
+	logout: Boolean!
+	updateUser(input: UpdateUserInput!): User!
+	deleteUser(id: ID!): Boolean!
 
-  # Addresses
-  createAddress(input: CreateAddressInput!): Address!
-  updateAddress(id: ID!, input: UpdateAddressInput!): Address!
-  deleteAddress(id: ID!): Boolean!
+	# Addresses
+	createAddress(input: CreateAddressInput!): Address!
+	updateAddress(id: ID!, input: UpdateAddressInput!): Address!
+	deleteAddress(id: ID!): Boolean!
 
-  # Orders
-  createOrder(input: CreateOrderInput!): Order!
-  updateOrderAddress(id: ID!, input: UpdateOrderInput!): Order!
-  updateOrderStatus(id: ID!, input: UpdateOrderInput!): Order!
-  deleteOrder(id: ID!): Boolean!
+	# Orders
+	createOrder(input: CreateOrderInput!): Order!
+	updateOrderAddress(id: ID!, input: UpdateOrderInput!): Order!
+	updateOrderStatus(id: ID!, input: UpdateOrderInput!): Order!
+	deleteOrder(id: ID!): Boolean!
 
-  # Payments
-  createPaymentIntent(input: CreatePaymentIntentInput!): PaymentIntentResponse!
-  processPayment(orderId: ID!, paymentMethod: String!): Payment!
+	# Payments
+	createPaymentIntent(input: CreatePaymentIntentInput!): PaymentIntentResponse!
+	processPayment(orderId: ID!, paymentMethod: String!): Payment!
 }
