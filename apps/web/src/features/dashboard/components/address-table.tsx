@@ -14,7 +14,10 @@ import { Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useDeleteAddress } from '@/features/dashboard/hooks/use-delete-address';
-import { formatFullAddress, formatLocation } from '@/features/dashboard/lib/format-utils';
+import {
+	formatFullAddress,
+	formatLocation,
+} from '@/features/dashboard/lib/format-utils';
 
 export interface Address {
 	id: string;

@@ -37,7 +37,7 @@ describe('ProductDetail', () => {
 
 		const image = screen.getByRole('img', { name: /Nike Air/i });
 		expect(image).toBeInTheDocument();
-		
+
 		expect(image).toHaveAttribute(
 			'src',
 			expect.stringContaining(product.image as string),

@@ -4,7 +4,6 @@ import { LoginForm } from '@/features/auth/components/login-form';
 import { redirect } from 'next/navigation';
 import { render, screen, waitFor } from '@/testing/test-utils';
 
-
 const mockLoginUserFn = vi.fn();
 vi.mock('@/features/auth/hooks/use-login-user', () => ({
 	useLoginUser: () => ({

@@ -10,11 +10,11 @@ export default function Home() {
 	const { categories } = categoriesData;
 	return (
 		<main>
-			<Header>{<SearchBar />}</Header>
-			<HeroSection />
-			<HomeCategory categories={categories} />
-			<HomeProductPreview />
-			<Footer />
+				<Header>{<SearchBar />}</Header>
+				<HeroSection />
+				<HomeCategory categories={categories} />
+				<HomeProductPreview />
+				<Footer />
 		</main>
 	);
 }

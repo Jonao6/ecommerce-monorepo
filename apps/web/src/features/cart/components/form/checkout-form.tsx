@@ -80,7 +80,6 @@ export const CheckoutForm = ({
 		}
 
 		const addressResult = await createUserAddress({
-			userId,
 			address,
 		});
 
