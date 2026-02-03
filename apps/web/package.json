@@ -6,7 +6,7 @@
 		"dev": "next dev --turbopack",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint",
+		"lint": "pnpm prettier . -write && next lint",
 		"test": "vitest",
 		"test:e2e": "playwright test",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
