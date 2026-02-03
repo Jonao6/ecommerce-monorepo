@@ -31,7 +31,6 @@
     "setup": "pnpm install && pnpm prisma:generate && pnpm db:migrate && pnpm db:seed"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "concurrently": "^8.2.2"
+    "typescript": "^5.9.2"
   }
 }
