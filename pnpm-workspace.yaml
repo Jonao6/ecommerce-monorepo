@@ -19,6 +19,7 @@ onlyBuiltDependencies:
   - bcrypt
   - core-js-pure
   - esbuild
+  - msw
   - prisma
   - sharp
   - unrs-resolver
