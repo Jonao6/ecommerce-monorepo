@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql";
 import { prisma } from "../lib/index.js"
 import { Request, Response } from "express";
 import { Role as UserRole } from "../utils/rbac.js";
+import { applyRateLimit, RATE_LIMITS, RateLimitInfo, RateLimitUtils } from "@/utils/rateLimit.js";
 
 type UserPayload = {
   id: string;
@@ -13,12 +14,24 @@ type UserPayload = {
   exp: number;
 };
 
+type RateLimitUtilsCtx = {
+  getMetrics: () => ReturnType<typeof RateLimitUtils.getAllMetrics>;
+  clearRateLimit: (identifier: string) => ReturnType<typeof RateLimitUtils.clearRateLimit>;
+  getRateLimitInfo: (
+    identifier: string,
+    windowMs: number
+  ) => ReturnType<typeof RateLimitUtils.getRateLimitInfo>;
+};
+
+type RateLimitType = keyof typeof RATE_LIMITS;
+
 export interface Context {
   req: Request;
   res: Response;
   prisma: typeof prisma;
   user: UserPayload | null;
-  applyRateLimit?: (type?: string) => Promise<void>;
+  applyRateLimit: (type?: RateLimitType) => Promise<RateLimitInfo>;
+  rateLimitUtils: RateLimitUtilsCtx;
 }
 
 function verifyToken(token: string): UserPayload {
@@ -56,5 +69,18 @@ export const context = async ({ req, res }: { req: Request; res: Response }): Pr
     }
   }
 
-  return { req, res, prisma, user };
+  const base = { req, res, prisma, user };
+
+  return {
+    ...base,
+
+    applyRateLimit: (type: RateLimitType = "GENERAL") => applyRateLimit(base, type),
+
+    rateLimitUtils: {
+      getMetrics: () => RateLimitUtils.getAllMetrics(),
+      clearRateLimit: (identifier: string) => RateLimitUtils.clearRateLimit(identifier),
+      getRateLimitInfo: (identifier: string, windowMs: number) =>
+        RateLimitUtils.getRateLimitInfo(identifier, windowMs),
+    },
+  };
 };

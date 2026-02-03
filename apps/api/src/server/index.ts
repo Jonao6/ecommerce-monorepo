@@ -1,8 +1,8 @@
 import { ApolloServer } from "@apollo/server"
-import { expressMiddleware } from "@as-integrations/express5"
+import { ExpressContextFunctionArgument, expressMiddleware } from "@as-integrations/express5"
 import cookieParser from "cookie-parser"
 import cors from "cors"
-import express from "express"
+import express, { type Application } from "express"
 import jwt from "jsonwebtoken"
 import Stripe from "stripe"
 import { resolvers } from "../graphql/resolvers/index.js"
@@ -13,7 +13,7 @@ import type { Context } from "./context.js"
 import { context } from "./context.js"
 import { applyRateLimit, RATE_LIMITS, RateLimitUtils } from "../utils/rateLimit.js"
 
-const app = express()
+const app: Application = express()
 const PORT = process.env.PORT || 4000
 let _stripe: Stripe | null = null
 
@@ -192,13 +192,13 @@ async function startServer() {
       }
     },
     expressMiddleware(apolloServer, {
-      context: async ({ req, res }: { req: any; res: any }) => {
+      context: async ({ req, res }: ExpressContextFunctionArgument): Promise<Context> => {
         const ctx = await context({ req, res });
         return {
           ...ctx,
           applyRateLimit: (type: keyof typeof RATE_LIMITS = 'GENERAL') => 
             applyRateLimit(ctx, type),
-          RateLimitUtils: {
+          rateLimitUtils: {
             getMetrics: () => RateLimitUtils.getAllMetrics(),
             clearRateLimit: (identifier: string) => 
               RateLimitUtils.clearRateLimit(identifier),
@@ -278,3 +278,6 @@ startServer()
   .finally(async () => {
     await prisma.$disconnect()
   })
+
+
+export default app
