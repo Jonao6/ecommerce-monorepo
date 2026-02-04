@@ -10,7 +10,6 @@ import {
   requireAuth,
   requireAdmin,
   requireOwnershipOrPermission,
-  requirePermission,
 } from "../../utils/auth.js"
 import {
   validateEmail,
@@ -148,14 +147,16 @@ export const userResolvers: Resolvers = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
+        sameSite: "none",
+        domain: process.env.FRONTEND_URL,
         path: "/",
       })
       context.res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "strict",
+        sameSite: "none",
+        domain: process.env.FRONTEND_URL,
         path: "/",
       })
 
