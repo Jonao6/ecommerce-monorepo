@@ -157,7 +157,7 @@ async function startServer() {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
-        sameSite: "strict",
+        sameSite: "none",
         path: "/",
       })
 
@@ -213,7 +213,7 @@ async function startServer() {
             rateLimitInfo: error.info || error.extensions?.rateLimitInfo,
           })
         } else {
-          res.status(429).json({ error: "Rate limit exceeded" })
+         return res.status(429).json({ error: "Rate limit exceeded" })
         }
       }
     },
@@ -270,12 +270,12 @@ async function startServer() {
 
     try {
       const metrics = RateLimitUtils.getAllMetrics()
-      res.json({
+      return res.json({
         metrics,
         timestamp: new Date().toISOString(),
       })
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch metrics" })
+      return res.status(500).json({ error: "Failed to fetch metrics" })
     }
   })
 
@@ -292,9 +292,9 @@ async function startServer() {
 
     try {
       await RateLimitUtils.clearRateLimit(identifier)
-      res.json({ message: `Rate limit cleared for ${identifier}` })
+      return res.json({ message: `Rate limit cleared for ${identifier}` })
     } catch (error) {
-      res.status(500).json({ error: "Failed to clear rate limit" })
+      return res.status(500).json({ error: "Failed to clear rate limit" })
     }
   })
 
