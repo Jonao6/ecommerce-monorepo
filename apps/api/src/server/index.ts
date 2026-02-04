@@ -133,9 +133,6 @@ async function startServer() {
                 : 0,
         })
       }
-      return res.status(400).json({
-        error: 'another api error',
-      })
     }
 
     const { accessToken, refreshToken } = req.cookies
