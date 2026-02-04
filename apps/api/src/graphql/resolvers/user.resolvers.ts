@@ -148,7 +148,6 @@ export const userResolvers: Resolvers = {
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
         sameSite: "none",
-        domain: process.env.FRONTEND_URL,
         path: "/",
       })
       context.res.cookie("refreshToken", refreshToken, {
@@ -156,7 +155,6 @@ export const userResolvers: Resolvers = {
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         sameSite: "none",
-        domain: process.env.FRONTEND_URL,
         path: "/",
       })
 
