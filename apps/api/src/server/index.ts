@@ -138,13 +138,11 @@ async function startServer() {
     const { accessToken, refreshToken } = req.cookies
 
     const generateNewAccessToken = async () => {
-      if (!refreshToken) return res.status(401).send({ ok: false })
+      if (!refreshToken) return null
 
       const redis = await getRedisClient()
       const userId = await redis.get(`refresh_${refreshToken}`)
-      if (!userId || typeof userId !== "string") {
-        return null
-      }
+      if (!userId || typeof userId !== "string") return null
 
       const user = await prisma.user.findUnique({ where: { id: userId } })
       if (!user) return null
@@ -163,7 +161,7 @@ async function startServer() {
         path: "/",
       })
 
-      return { email: user.email, name: user.name }
+      return user
     }
 
     const sanitizeUser = (user: any) => ({
