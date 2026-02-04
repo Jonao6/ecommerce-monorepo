@@ -16,6 +16,7 @@ export default async function middleware(req: NextRequest) {
 			const authorizationUrl =
 				process.env.NEXT_PUBLIC_AUTHORIZATION_URI || 'http://localhost:4000/me';
 			const cookies = req.cookies.toString();
+			console.log(cookies);
 			console.log(authorizationUrl);
 			const res = await fetch(authorizationUrl, {
 				method: 'GET',
@@ -32,6 +33,7 @@ export default async function middleware(req: NextRequest) {
 
 			const contentType = res.headers.get('content-type');
 			if (!contentType || !contentType.includes('application/json')) {
+				console.log(contentType);
 				return NextResponse.redirect(new URL('/signin', req.nextUrl));
 			}
 
