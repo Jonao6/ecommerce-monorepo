@@ -31,6 +31,7 @@ export interface Context {
 function verifyToken(token: string): UserPayload {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    decoded.role
     if (!decoded.id || !decoded.email) {
       throw new Error("Invalid token payload");
     }

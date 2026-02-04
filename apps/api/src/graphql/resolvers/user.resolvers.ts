@@ -61,7 +61,6 @@ export const userResolvers: Resolvers = {
       const token = cookies["accessToken"]
       if (!token) throw new GraphQLError("UNAUTHORIZED")
 
-      requirePermission(Permission.READ_OWN_PROFILE)(context)
       const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
       const user = await context.prisma.user.findUnique({
         where: { id: payload.id },
@@ -132,7 +131,6 @@ export const userResolvers: Resolvers = {
           extensions: { code: "INVALID_DATA" },
         })
       }
-
       const accessToken = jwt.sign(
         { id: user.id, email: user.email, name: user.name, role: user.role },
         process.env.JWT_SECRET!,
@@ -150,14 +148,14 @@ export const userResolvers: Resolvers = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
       })
       context.res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
       })
 

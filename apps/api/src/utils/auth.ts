@@ -25,7 +25,6 @@ export const requireAdmin = (context: Context) => {
 export const requirePermission = (permission: Permission) => {
   return (context: Context) => {
     const user = requireAuth(context)
-
     if (!hasPermission(user.role as Role, permission)) {
       throw new GraphQLError("Insufficient permissions", {
         extensions: {
@@ -43,7 +42,6 @@ export const requirePermission = (permission: Permission) => {
 export const requireOwnershipOrPermission = (permission: Permission) => {
   return (context: Context, resourceUserId: string) => {
     const user = requireAuth(context)
-
     if (user.id === resourceUserId) {
       return user
     }
