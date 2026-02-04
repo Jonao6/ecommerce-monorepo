@@ -124,15 +124,17 @@ async function startServer() {
     } catch (error: any) {
       if (error?.message?.includes("Rate limit exceeded")) {
         return res.status(429).json({
-          error: error.message,
+          error: error.message || "Rate limit exceeded",
           retryAfter:
-            error.info?.retryAfter ||
-            error.extensions?.rateLimitInfo?.retryAfter || 
-            '',
+            typeof error?.info?.retryAfter === "number"
+              ? error.info.retryAfter
+              : typeof error?.extensions?.rateLimitInfo?.retryAfter === "number"
+                ? error.extensions.rateLimitInfo.retryAfter
+                : 0,
         })
       }
       return res.status(400).json({
-        error: error.message
+        error: 'another api error',
       })
     }
 
