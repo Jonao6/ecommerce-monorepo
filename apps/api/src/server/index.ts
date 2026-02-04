@@ -133,7 +133,7 @@ async function startServer() {
       if (!user) return null;
 
       const newAccessToken = jwt.sign(
-        { id: user.id, email: user.email, name: user.name },
+        { id: user.id, email: user.email, name: user.name, role: user.role },
         process.env.JWT_SECRET!,
         { expiresIn: "15m" }
       )
@@ -142,7 +142,7 @@ async function startServer() {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
       })
       

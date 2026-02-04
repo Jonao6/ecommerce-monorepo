@@ -29,7 +29,6 @@ export const addressResolvers: Resolvers = {
           extensions: { code: "NOT_FOUND" }
         });
       }
-      
       requireOwnershipOrPermission(Permission.UPDATE_OWN_ADDRESS)(context, address.userId);
       
       return address;
