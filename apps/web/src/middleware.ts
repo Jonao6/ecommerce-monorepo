@@ -16,8 +16,6 @@ export default async function middleware(req: NextRequest) {
 			const authorizationUrl =
 				process.env.NEXT_PUBLIC_AUTHORIZATION_URI || 'http://localhost:4000/me';
 			const cookies = req.cookies.toString();
-			console.log(cookies);
-			console.log(authorizationUrl);
 			const res = await fetch(authorizationUrl, {
 				method: 'GET',
 				headers: {
@@ -27,20 +25,17 @@ export default async function middleware(req: NextRequest) {
 			});
 
 			if (!res.ok) {
-				console.log(res);
 				return NextResponse.redirect(new URL('/signin', req.nextUrl));
 			}
 
 			const contentType = res.headers.get('content-type');
 			if (!contentType || !contentType.includes('application/json')) {
-				console.log(contentType);
 				return NextResponse.redirect(new URL('/signin', req.nextUrl));
 			}
 
 			const data: { ok: boolean; user: User } = await res.json();
 
 			if (!data.ok) {
-				console.log(data);
 				return NextResponse.redirect(new URL('/signin', req.nextUrl));
 			}
 
@@ -55,7 +50,6 @@ export default async function middleware(req: NextRequest) {
 			return response;
 		} catch (error) {
 			console.error('Middleware auth error:', error);
-			console.log(error);
 			return NextResponse.redirect(new URL('/signin', req.nextUrl));
 		}
 	}
