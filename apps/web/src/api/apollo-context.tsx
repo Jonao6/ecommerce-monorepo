@@ -25,10 +25,14 @@ function makeClient() {
 				switch (err?.extensions?.code) {
 					case 'UNAUTHORIZED': {
 						return new Observable((observer) => {
-							fetch('http://localhost:4000/me', {
-								method: 'POST',
-								credentials: 'include',
-							})
+							fetch(
+								process.env.NEXT_PUBLIC_AUTHORIZATION_URI ||
+									'http://localhost:4000/me',
+								{
+									method: 'POST',
+									credentials: 'include',
+								},
+							)
 								.then(() => {
 									forward(operation).subscribe({
 										next: observer.next.bind(observer),

@@ -23,7 +23,7 @@ export default async function middleware(req: NextRequest) {
 				},
 				credentials: 'include',
 			});
-
+			console.log(cookies);
 			if (!res.ok) {
 				return NextResponse.redirect(new URL('/signin', req.nextUrl));
 			}
