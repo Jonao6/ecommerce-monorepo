@@ -134,9 +134,9 @@ async function startServer() {
     }
 
     const { accessToken, refreshToken } = req.cookies
+    console.log(accessToken, refreshToken)
     const generateNewAccessToken = async () => {
       if (!refreshToken) return null
-
       const redis = await getRedisClient()
       const userId = await redis.get(`refresh_${refreshToken}`)
       if (!userId || typeof userId !== "string") return null
