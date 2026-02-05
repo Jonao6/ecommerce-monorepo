@@ -112,7 +112,7 @@ async function startServer() {
   )
   app.get("/me", async (req, res) => {
     try {
-      const rateLimitInfo = await applyRateLimit({ req, res }, "AUTH")
+      const rateLimitInfo = await applyRateLimit({ req, res }, "GENERAL")
 
       res.set({
         "X-RateLimit-Limit": rateLimitInfo.limit.toString(),
@@ -124,19 +124,16 @@ async function startServer() {
     } catch (error: any) {
       if (error?.message?.includes("Rate limit exceeded")) {
         return res.status(429).json({
-          error: error.message || "Rate limit exceeded",
+          error: error.message,
           retryAfter:
-            typeof error?.info?.retryAfter === "number"
-              ? error.info.retryAfter
-              : typeof error?.extensions?.rateLimitInfo?.retryAfter === "number"
-                ? error.extensions.rateLimitInfo.retryAfter
-                : 0,
+            error.info?.retryAfter ||
+            error.extensions?.rateLimitInfo?.retryAfter,
+          rateLimitInfo: error.info || error.extensions?.rateLimitInfo,
         })
       }
     }
 
     const { accessToken, refreshToken } = req.cookies
-
     const generateNewAccessToken = async () => {
       if (!refreshToken) return null
 
@@ -213,7 +210,7 @@ async function startServer() {
             rateLimitInfo: error.info || error.extensions?.rateLimitInfo,
           })
         } else {
-         return res.status(429).json({ error: "Rate limit exceeded" })
+          return res.status(429).json({ error: "Rate limit exceeded" })
         }
       }
     },
