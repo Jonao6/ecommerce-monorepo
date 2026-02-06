@@ -39,7 +39,7 @@ app.post(
       event = getStripe().webhooks.constructEvent(
         req.body,
         sig as string,
-        process.env.STRIPE_WEBHOOK_SECRET_LOCAL!,
+        process.env.STRIPE_WEBHOOK_SECRET!,
       )
     } catch (err: any) {
       return res.status(400).send(`Webhook Error: ${err.message}`)
@@ -112,7 +112,7 @@ async function startServer() {
   )
   app.get("/me", async (req, res) => {
     try {
-      const rateLimitInfo = await applyRateLimit({ req, res }, "GENERAL")
+      const rateLimitInfo = await applyRateLimit({ req, res }, "AUTH")
 
       res.set({
         "X-RateLimit-Limit": rateLimitInfo.limit.toString(),
