@@ -13,15 +13,14 @@ export default async function middleware(req: NextRequest) {
 
 	if (isProtectedRoute) {
 		try {
-			const authorizationUrl =
-				process.env.NEXT_PUBLIC_AUTHORIZATION_URI || 'http://localhost:4000/me';
+			const authorizationUrl = new URL('/api/me', req.nextUrl.origin);
 			const cookies = req.cookies.toString();
 			const res = await fetch(authorizationUrl, {
 				method: 'GET',
 				headers: {
 					Cookie: cookies,
 				},
-				credentials: 'include',
+				cache: 'no-store',
 			});
 			console.log(cookies);
 			if (!res.ok) {

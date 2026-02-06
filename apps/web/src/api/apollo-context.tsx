@@ -15,7 +15,7 @@ import { ErrorLink } from '@apollo/client/link/error';
 
 function makeClient() {
 	const httpLink = new HttpLink({
-		uri: process.env.NEXT_PUBLIC_GRAPHQL_URI || 'http://localhost:4000/graphql',
+		uri: '/api/graphql',
 		credentials: 'include',
 	});
 
@@ -25,14 +25,10 @@ function makeClient() {
 				switch (err?.extensions?.code) {
 					case 'UNAUTHORIZED': {
 						return new Observable((observer) => {
-							fetch(
-								process.env.NEXT_PUBLIC_AUTHORIZATION_URI ||
-									'http://localhost:4000/me',
-								{
-									method: 'POST',
-									credentials: 'include',
-								},
-							)
+							fetch('/api/me', {
+								method: 'GET',
+								credentials: 'include',
+							})
 								.then(() => {
 									forward(operation).subscribe({
 										next: observer.next.bind(observer),
