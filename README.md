@@ -118,11 +118,9 @@ ecommerce-monorepo/
 
 5. **Configure o Redis**
    ```bash
-   # Inicie o serviço Redis
-   redis-server
-   
    # Configure no apps/api/.env
    REDIS_URL="redis://localhost:6379"
+   ...
    ```
 
 6. **Rode as migrations do banco de dados**
@@ -149,50 +147,6 @@ ecommerce-monorepo/
 8. **Acesse as aplicações**
    - Frontend: http://localhost:3000
    - GraphQL Playground: http://localhost:4000/graphql
-   - API Health Check: http://localhost:4000/health
-
-### Scripts Úteis
-
-```bash
-# Database
-pnpm db:migrate                  # Roda migrations do Prisma
-pnpm db:seed                     # Popula banco com dados de exemplo
-
-# Prisma
-pnpm prisma:generate             # Gera Prisma Client
-pnpm prisma:migrate              # Roda migrations
-pnpm prisma:seed                 # Popula banco com dados de exemplo
-
-# Development
-pnpm dev                        # Inicia API e Web em modo desenvolvimento
-pnpm dev:api                    # Inicia apenas API backend
-pnpm dev:web                    # Inicia apenas frontend web
-
-# Production
-pnpm build                      # Build para produção de todos os apps
-pnpm start:prod                 # Inicia aplicações em produção
-pnpm start                      # Inicia aplicações (build + start)
-pnpm start:api                  # Inicia apenas API em produção
-pnpm start:web                  # Inicia apenas Web em produção
-
-# Testing
-pnpm test                       # Roda todos os testes (API + Web)
-pnpm test:web                   # Roda testes do Web
-pnpm test:coverage              # Roda testes com cobertura
-
-# Quality Assurance
-pnpm lint                       # Roda linting em todos os pacotes
-pnpm lint:fix                   # Corrige problemas de lint automaticamente
-pnpm lint:web                   # Roda lint apenas no Web
-pnpm typecheck                  # Verifica tipos TypeScript em todos os apps
-pnpm typecheck:api              # Verifica tipos apenas na API
-pnpm typecheck:web              # Verifica tipos apenas no Web
-
-# Maintenance
-pnpm clean                      # Remove build artifacts e node_modules
-pnpm clean:node_modules         # Remove apenas node_modules
-pnpm setup                      # Setup completo do projeto (install + db + migrations + seed)
-```
 
 ## 🎯 Features Detalhadas
 
