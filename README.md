@@ -107,30 +107,21 @@ ecommerce-monorepo/
    # Configure suas credenciais (Stripe, Database, etc.)
    ```
 
-4. **Configure o banco de dados PostgreSQL**
-   ```bash
-   # Crie um banco de dados para o projeto
-   createdb ecommerce
-   
-   # Configure as variáveis de ambiente no apps/api/.env
-   DATABASE_URL="postgresql://username:password@localhost:5432/ecommerce"
-   ```
-
-5. **Configure o Redis**
+4. **Configure o Redis**
    ```bash
    # Configure no apps/api/.env
    REDIS_URL="redis://localhost:6379"
    ...
    ```
 
-6. **Rode as migrations do banco de dados**
+5. **Rode as migrations do banco de dados**
    ```bash
    cd apps/api
    pnpm prisma:migrate
    pnpm prisma:generate
    ```
 
-7. **Inicie os serviços em terminais separados**
+6. **Inicie os serviços em terminais separados**
    
    **Terminal 1 - API Backend:**
    ```bash
@@ -144,7 +135,7 @@ ecommerce-monorepo/
    pnpm dev
    ```
 
-8. **Acesse as aplicações**
+7. **Acesse as aplicações**
    - Frontend: http://localhost:3000
    - GraphQL Playground: http://localhost:4000/graphql
 
