@@ -1,0 +1,22 @@
+{
+  "title": "SNEAKLINE - Loja #1 de Sneakers do Brasil",
+  "content": [
+    "Desenvolvi uma plataforma de e-commerce completa especializada em tênis de design estiloso e edições limitadas para o mercado brasileiro.",
+    "Implementei catálogo de produtos, carrinho de compras persistente e sistema de pagamentos com Stripe.",
+    "Criei dashboards administrativos com GraphQL para gestão de pedidos e endereços.",
+    "Utilizei arquitetura monorepo com Next.js 15, TypeScript e Prisma ORM para garantir escalabilidade e experiência de compra moderna."
+  ],
+  "image": "/sneakline-ecommerce.jpg",
+  "url": "https://github.com/Jonao6/ecommerce-monorepo",
+  "demo": "https://sneakline-web.vercel.app",
+  "tags": [
+    "Next.js",
+    "TypeScript",
+    "GraphQL",
+    "Prisma",
+    "PostgreSQL",
+    "Tailwind CSS",
+    "Stripe",
+    "React"
+  ]
+}
