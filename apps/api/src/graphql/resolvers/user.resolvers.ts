@@ -1,9 +1,6 @@
 import { GraphQLError } from "graphql"
 import { Context } from "../../server/context.js"
 import { getRedisClient } from "../../redis/client.js"
-import bcrypt from "bcrypt"
-import jwt, { JwtPayload } from "jsonwebtoken"
-import crypto from "crypto"
 import { Resolvers } from "../types.js"
 import { removeNulls } from "@/utils/cleanInput.js"
 import {
@@ -18,22 +15,41 @@ import {
   sanitizeHtml,
 } from "../../utils/validation.js"
 import { Permission } from "@/utils/rbac.js"
+import { UserService } from "../../services/user.service.js"
+import { JwtTokenService } from "../../lib/token.service.js"
+import { BcryptPasswordService } from "../../lib/password.service.js"
+import { PrismaUserRepository } from "../../lib/repositories/prisma-user.repository.js"
+import { prisma } from "../../lib/index.js"
+import { Loaders } from "../../lib/loaders.js"
 
-const SALT_ROUNDS = 10
+const userRepository = new PrismaUserRepository(prisma)
+const passwordService = new BcryptPasswordService()
+const tokenService = new JwtTokenService()
+const userService = new UserService(prisma, userRepository, passwordService, tokenService)
 
 export const userResolvers: Resolvers = {
   Query: {
     adminUsers: async (_: any, __: any, context: Context) => {
       requireAdmin(context)
-      return context.prisma.user.findMany()
+      return context.prisma.user.findMany({
+        include: {
+          addresses: true,
+          orders: {
+            include: {
+              items: { include: { product: true } },
+              address: true,
+              payment: true,
+              delivery: true,
+            },
+          },
+        },
+      }) as any
     },
 
     user: async (_: any, { email }: { email: string }, context: Context) => {
       const user = requireAuth(context)
 
-      const foundUser = await context.prisma.user.findUnique({
-        where: { email },
-      })
+      const foundUser = await userService.findByEmail(email)
 
       if (!foundUser) {
         throw new GraphQLError("User not found", {
@@ -46,26 +62,11 @@ export const userResolvers: Resolvers = {
         foundUser.id,
       )
 
-      return foundUser
+      return foundUser as any
     },
 
-    me: async (_: any, __: any, context: Context) => {
-      const cookieHeader = context.req?.headers?.cookie || ""
-
-      const cookies: Record<string, string> = {}
-      cookieHeader.split(";").forEach((c) => {
-        const [key, value] = c.trim().split("=")
-        cookies[key] = value
-      })
-      const token = cookies["accessToken"]
-      if (!token) throw new GraphQLError("UNAUTHORIZED")
-
-      const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
-      const user = await context.prisma.user.findUnique({
-        where: { id: payload.id },
-      })
-
-      if (!user) throw new GraphQLError("UNAUTHORIZED")
+    me: async (_: any, __: any, context: Context): Promise<any> => {
+      const user = requireAuth(context)
       return user
     },
   },
@@ -91,23 +92,7 @@ export const userResolvers: Resolvers = {
       const sanitizedName = sanitizeHtml(input.name)
       const validName = validateStringLength(sanitizedName, 2, 100, "name")
 
-      const existingUser = await context.prisma.user.findUnique({
-        where: { email: input.email },
-      })
-
-      if (existingUser) {
-        throw new GraphQLError("User already exists", {
-          extensions: { code: "USER_ALREADY_EXISTS" },
-        })
-      }
-      const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS)
-      return context.prisma.user.create({
-        data: {
-          name: validName,
-          email: input.email.toLowerCase().trim(),
-          passwordHash: hashedPassword,
-        },
-      })
+      return userService.create(input.email, input.password, validName) as any
     },
 
     getUser: async (
@@ -115,42 +100,21 @@ export const userResolvers: Resolvers = {
       { input }: { input: { email: string; password: string } },
       context: Context,
     ) => {
-      const user = await context.prisma.user.findUnique({
-        where: { email: input.email.toLowerCase() },
-      })
-      if (!user) {
-        throw new GraphQLError("Usuário não encontrado", {
-          extensions: { code: "USER_NOT_FOUND" },
-        })
-      }
-
-      const valid = await bcrypt.compare(input.password, user.passwordHash)
-      if (!valid) {
-        throw new GraphQLError("Dado inválido", {
-          extensions: { code: "INVALID_DATA" },
-        })
-      }
-      const accessToken = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, role: user.role },
-        process.env.JWT_SECRET!,
-        { expiresIn: "15m" },
-      )
+      const result = await userService.login(input.email, input.password)
 
       const redis = await getRedisClient()
-
-      const refreshToken = crypto.randomBytes(40).toString("hex")
-      await redis.set(`refresh_${refreshToken}`, user.id, {
+      await redis.set(`refresh_${result.refreshToken}`, result.user.id, {
         EX: 30 * 24 * 60 * 60,
       })
 
-      context.res.cookie("accessToken", accessToken, {
+      context.res.cookie("accessToken", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 15 * 60 * 1000,
         sameSite: "none",
         path: "/",
       })
-      context.res.cookie("refreshToken", refreshToken, {
+      context.res.cookie("refreshToken", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -159,8 +123,8 @@ export const userResolvers: Resolvers = {
       })
 
       return {
-        message: "Login bem-sucedido",
-        user,
+        message: result.message,
+        user: result.user,
       }
     },
 
@@ -192,21 +156,14 @@ export const userResolvers: Resolvers = {
 
       const dataCleaned = removeNulls(input)
 
-      return context.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          ...dataCleaned,
-        },
-      })
+      return userService.update(user.id, dataCleaned) as any
     },
     deleteUser: async (_: any, { id }, context: Context) => {
-      const user = requireAuth(context)
+      requireAuth(context)
 
       requireOwnershipOrPermission(Permission.DELETE_ANY_USER)(context, id)
 
-      const existingUser = await context.prisma.user.findUnique({
-        where: { id },
-      })
+      const existingUser = await userService.findById(id)
 
       if (!existingUser) {
         throw new GraphQLError("User not found", {
@@ -214,22 +171,35 @@ export const userResolvers: Resolvers = {
         })
       }
 
-      await context.prisma.user.delete({
-        where: { id },
-      })
+      await userService.delete(id)
 
       return true
     },
   },
   User: {
-    addresses: (parent, _, context: Context) =>
-      context.prisma.address.findMany({ where: { userId: parent.id } }),
-    orders: (parent: any, _: any, context: Context) =>
-      context.prisma.order.findMany({ where: { userId: parent.id } }),
+    addresses: async (parent, _, context) => {
+      if ((parent as any).addresses) return (parent as any).addresses;
+      return context.prisma.address.findMany({ where: { userId: parent.id } });
+    },
+    orders: async (parent, _, context) => {
+      if ((parent as any).orders) return (parent as any).orders;
+      return context.prisma.order.findMany({
+        where: { userId: parent.id },
+        include: {
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
+        },
+      });
+    },
   },
 
   Address: {
-    user: (parent, _, context: Context) =>
-      context.prisma.user.findUniqueOrThrow({ where: { id: parent.userId } }),
+    user: async (parent, _, context) => {
+      if ((parent as any).user) return (parent as any).user;
+      const loaders = Loaders.getInstance();
+      return loaders.userLoader.load(parent.userId);
+    },
   },
 }

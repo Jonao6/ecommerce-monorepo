@@ -18,6 +18,7 @@
     "prisma:migrate": "cd apps/api && pnpm prisma:migrate dev",
     "prisma:seed": "cd apps/api && pnpm prisma:seed",
     "test": "pnpm test:api && pnpm test:web",
+    "test:api": "cd apps/api && pnpm test",
     "test:web": "cd apps/web && pnpm test",
     "test:coverage": "pnpm test:web --coverage",
     "lint": "pnpm lint:web",
