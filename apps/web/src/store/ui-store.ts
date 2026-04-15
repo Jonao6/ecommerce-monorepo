@@ -5,7 +5,7 @@ interface UIState {
 	error: string | null;
 	successMessage: string | null;
 	modalOpen: string | null;
-	
+
 	setLoading: (loading: boolean) => void;
 	setError: (error: string | null) => void;
 	setSuccess: (message: string | null) => void;
@@ -30,5 +30,6 @@ export const useUIStore = create<UIState>((set) => ({
 
 export const useIsLoading = () => useUIStore((state) => state.isLoading);
 export const useUIError = () => useUIStore((state) => state.error);
-export const useSuccessMessage = () => useUIStore((state) => state.successMessage);
+export const useSuccessMessage = () =>
+	useUIStore((state) => state.successMessage);
 export const useModalState = () => useUIStore((state) => state.modalOpen);

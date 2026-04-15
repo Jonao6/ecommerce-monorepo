@@ -48,6 +48,11 @@ describe('Home-Product-Preview', () => {
 			}),
 		);
 
-		await expect(HomeProductPreview()).rejects.toThrow();
+		const jsx = await HomeProductPreview();
+		render(jsx);
+
+		expect(
+			screen.getByText(/Não foi possível carregar os produtos./i),
+		).toBeInTheDocument();
 	});
 });
