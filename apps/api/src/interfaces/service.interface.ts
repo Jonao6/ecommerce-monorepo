@@ -1,3 +1,5 @@
+import { Role } from '@/utils/rbac.js';
+
 export interface IPasswordService {
   hash(password: string): Promise<string>;
   compare(password: string, hash: string): Promise<boolean>;
@@ -7,7 +9,9 @@ export interface TokenPayload {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role: Role;
+  iat: number;
+  exp: number;
 }
 
 export interface ITokenService {

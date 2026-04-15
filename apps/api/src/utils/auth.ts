@@ -1,9 +1,9 @@
 import { GraphQLError } from "graphql"
-import { Context } from "../server/context.js"
+import { ServerContext } from "@/server/context.js"
 import { Permission, Role, hasPermission } from "./rbac.js"
 import { randomUUID } from "node:crypto"
 
-export const requireAuth = (context: Context) => {
+export const requireAuth = (context: ServerContext) => {
   if (!context.user) {
     throw new GraphQLError("Authentication required", {
       extensions: { code: "UNAUTHORIZED" },
@@ -12,7 +12,7 @@ export const requireAuth = (context: Context) => {
   return context.user
 }
 
-export const requireAdmin = (context: Context) => {
+export const requireAdmin = (context: ServerContext) => {
   const user = requireAuth(context)
   if (user.role !== Role.ADMIN) {
     throw new GraphQLError("Admin access required", {
@@ -23,7 +23,7 @@ export const requireAdmin = (context: Context) => {
 }
 
 export const requirePermission = (permission: Permission) => {
-  return (context: Context) => {
+  return (context: ServerContext) => {
     const user = requireAuth(context)
     if (!hasPermission(user.role as Role, permission)) {
       throw new GraphQLError("Insufficient permissions", {
@@ -40,7 +40,7 @@ export const requirePermission = (permission: Permission) => {
 }
 
 export const requireOwnershipOrPermission = (permission: Permission) => {
-  return (context: Context, resourceUserId: string) => {
+  return (context: ServerContext, resourceUserId: string) => {
     const user = requireAuth(context)
     if (user.id === resourceUserId) {
       return user
@@ -50,7 +50,7 @@ export const requireOwnershipOrPermission = (permission: Permission) => {
   }
 }
 
-export const validateOwnership = (context: Context, resourceUserId: string) => {
+export const validateOwnership = (context: ServerContext, resourceUserId: string) => {
   const user = requireAuth(context)
   if (user.id !== resourceUserId && user.role !== Role.ADMIN) {
     throw new GraphQLError(
@@ -65,7 +65,7 @@ export const validateOwnership = (context: Context, resourceUserId: string) => {
 
 export const withPermission = (permission: Permission) => {
   return (resolver: any) => {
-    return async (parent: any, args: any, context: Context, info: any) => {
+    return async (parent: any, args: any, context: ServerContext, info: any) => {
       requirePermission(permission)(context)
       return resolver(parent, args, context, info)
     }
@@ -74,7 +74,7 @@ export const withPermission = (permission: Permission) => {
 
 export const withOwnershipOrPermission = (permission: Permission) => {
   return (resolver: any) => {
-    return async (parent: any, args: any, context: Context, info: any) => {
+    return async (parent: any, args: any, context: ServerContext, info: any) => {
       const user = requireAuth(context)
 
       let resourceUserId: string | undefined
