@@ -1,44 +1,53 @@
-import { GraphQLError } from "graphql"
-import { prisma } from "../../lib/index.js"
-import { Resolvers } from "../types.js"
-import { requireAuth, requireAdmin, validateOwnership } from "../../utils/auth.js"
-import { 
-  validateId, 
-  validateQuantity, 
-  validatePrice, 
-  validateObjectId,
-  validateColor,
-  validateSize 
-} from "../../utils/validation.js"
+import { GraphQLError } from 'graphql';
+import { prisma } from '../../lib/index.js';
+import { Resolvers } from '../types.js';
+import { requireAuth, requireAdmin, validateOwnership } from '../../utils/auth.js';
+import { validateId, validateQuantity, validatePrice, validateObjectId, validateColor, validateSize } from '../../utils/validation.js';
+import { OrderService } from '../../services/order.service.js';
+import { PrismaOrderRepository } from '../../lib/repositories/prisma-order.repository.js';
+import { PrismaPaymentRepository } from '../../lib/repositories/prisma-payment.repository.js';
+import { Loaders } from '../../lib/loaders.js';
+
+const orderRepository = new PrismaOrderRepository(prisma);
+const paymentRepository = new PrismaPaymentRepository(prisma);
+const orderService = new OrderService(prisma, orderRepository, {} as any, paymentRepository);
 
 export const orderResolvers: Resolvers = {
   Query: {
     adminOrders: async (_, __, context) => {
       requireAdmin(context);
-      return prisma.order.findMany({
+      return context.prisma.order.findMany({
         include: {
           user: true,
-          items: true,
+          items: { include: { product: true } },
           address: true,
+          payment: true,
+          delivery: true,
         },
-      });
+      }) as any;
     },
     order: async (_, { id }, context) => {
       const user = requireAuth(context);
       const order = await context.prisma.order.findUnique({
         where: { id: parseInt(id) },
-        include: { items: true, user: true },
+        include: {
+          user: true,
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
+        },
       });
       
       if (!order) {
-        throw new GraphQLError("Order not found", {
-          extensions: { code: "NOT_FOUND" }
+        throw new GraphQLError('Order not found', {
+          extensions: { code: 'NOT_FOUND' },
         });
       }
 
       validateOwnership(context, order.userId);
       
-      return order;
+      return order as any;
     },
     userOrders: async (_, __, context) => {
       const user = requireAuth(context);
@@ -46,33 +55,39 @@ export const orderResolvers: Resolvers = {
       
       return context.prisma.order.findMany({
         where: { userId: user.id },
-        include: { items: true },
-      });
+        include: {
+          user: true,
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
+        },
+      }) as any;
     },
   },
   Mutation: {
     createOrder: async (_, { input }, context) => {
       const user = requireAuth(context);
-      const { addressId, items } = input
+      const { addressId, items } = input;
 
       validateOwnership(context, user.id);
 
       if (!items || items.length === 0) {
-        throw new GraphQLError("Order must contain at least one item", {
-          extensions: { code: "EMPTY_ORDER" }
+        throw new GraphQLError('Order must contain at least one item', {
+          extensions: { code: 'EMPTY_ORDER' },
         });
       }
 
       if (items.length > 50) {
-        throw new GraphQLError("Order cannot contain more than 50 items", {
-          extensions: { code: "ORDER_TOO_LARGE" }
+        throw new GraphQLError('Order cannot contain more than 50 items', {
+          extensions: { code: 'ORDER_TOO_LARGE' },
         });
       }
 
       items.forEach((item: any, index: number) => {
         if (!validateObjectId(item.productId)) {
           throw new GraphQLError(`Invalid product ID at index ${index}`, {
-            extensions: { code: "INVALID_PRODUCT_ID" }
+            extensions: { code: 'INVALID_PRODUCT_ID' },
           });
         }
         
@@ -80,7 +95,7 @@ export const orderResolvers: Resolvers = {
         
         if (item.color && !validateColor(item.color)) {
           throw new GraphQLError(`Invalid color at index ${index}: ${item.color}`, {
-            extensions: { code: "INVALID_COLOR" }
+            extensions: { code: 'INVALID_COLOR' },
           });
         }
         
@@ -89,160 +104,129 @@ export const orderResolvers: Resolvers = {
         }
       });
 
-      const productIds = items.map((item) => item.productId)
-      const products = await prisma.product.findMany({
-        where: { id: { in: productIds } },
-        select: { id: true, price: true },
-      })
-
-      const missingProducts = productIds.filter(id => !products.find(p => p.id === id))
-      if (missingProducts.length > 0) {
-        throw new GraphQLError("One or more products not found", {
-          extensions: { code: "PRODUCTS_NOT_FOUND" }
-        });
-      }
-
-      const totalAmount = products.reduce((sum, product) => {
-        const quantity =
-          items.find((i) => i.productId === product.id)?.quantity || 0
-        return sum + Number(product.price) * quantity
-      }, 0)
-
-      validatePrice(totalAmount);
-
       if (addressId) {
-        const validAddressId = validateId(addressId, "addressId");
+        const validAddressId = validateId(addressId, 'addressId');
         const address = await prisma.address.findUnique({
-          where: { id: validAddressId }
+          where: { id: validAddressId },
         });
         
         if (!address) {
-          throw new GraphQLError("Address not found", {
-            extensions: { code: "ADDRESS_NOT_FOUND" }
+          throw new GraphQLError('Address not found', {
+            extensions: { code: 'ADDRESS_NOT_FOUND' },
           });
         }
         
         validateOwnership(context, address.userId);
       }
 
-      const order = await prisma.order.create({
-        data: {
-          ...(addressId && {
-            address: { connect: { id: parseInt(addressId) } },
-          }),
-          totalAmount,
-          user: {
-            connect: { id: user.id },
-          },
-        },
-      })
-      await Promise.all(
-        items.map(async (item) => {
-          const product = products.find((p) => p.id === item.productId)
-          if (!product)
-            throw new GraphQLError("Product not found", {
-              extensions: { code: "PRODUCT_NOT_FOUND" }
-            });
+      const result = await orderService.createOrder(user.id, {
+        addressId: addressId ?? undefined,
+        items: items.map((item: any) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size,
+        })),
+      });
 
-          await prisma.orderItem.create({
-            data: {
-              orderId: order.id,
-              productId: item.productId,
-              quantity: item.quantity,
-              price: product.price,
-            },
-          })
-        })
-      )
-      await prisma.payment.create({
-        data: {
-          orderId: order.id,
-          paymentMethod: "card",
-          paymentStatus: "pending",
-          amount: totalAmount,
+      return context.prisma.order.findUnique({
+        where: { id: result.id },
+        include: {
+          user: true,
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
         },
-      })
-      return prisma.order.findUniqueOrThrow({
-        where: { id: order.id },
-        include: { items: true },
-      })
+      }) as any;
     },
     updateOrderStatus: async (_, { id, input }, context) => {
       requireAdmin(context);
-      return prisma.order.update({
-        where: { id: parseInt(id) },
-        data: { status: input.status! },
-      });
+      const result = await orderService.updateOrderStatus(parseInt(id), input.status!);
+      return context.prisma.order.findUnique({
+        where: { id: result.id },
+        include: {
+          user: true,
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
+        },
+      }) as any;
     },
     updateOrderAddress: async (_, { id, input }, context) => {
       const user = requireAuth(context);
       
-      const order = await prisma.order.findUnique({
-        where: { id: parseInt(id) }
+      const order = await context.prisma.order.findUnique({
+        where: { id: parseInt(id) },
       });
       
       if (!order) {
-        throw new GraphQLError("Order not found", {
-          extensions: { code: "NOT_FOUND" }
+        throw new GraphQLError('Order not found', {
+          extensions: { code: 'NOT_FOUND' },
         });
       }
 
       validateOwnership(context, order.userId);
 
       const address = await prisma.address.findUnique({
-        where: { id: parseInt(input.addressId!) }
+        where: { id: parseInt(input.addressId!) },
       });
       
       if (!address) {
-        throw new GraphQLError("Address not found", {
-          extensions: { code: "ADDRESS_NOT_FOUND" }
+        throw new GraphQLError('Address not found', {
+          extensions: { code: 'ADDRESS_NOT_FOUND' },
         });
       }
       
       validateOwnership(context, address.userId);
 
-      return prisma.order.update({
-        where: { id: parseInt(id) },
-        data: { address: { connect: { id: parseInt(input.addressId!) } } },
-      });
+      const result = await orderService.updateOrderAddress(parseInt(id), parseInt(input.addressId!));
+      return context.prisma.order.findUnique({
+        where: { id: result.id },
+        include: {
+          user: true,
+          items: { include: { product: true } },
+          address: true,
+          payment: true,
+          delivery: true,
+        },
+      }) as any;
     },
   },
   Order: {
-    user: (parent) => {
-      return prisma.user.findUniqueOrThrow({ where: { id: parent.userId } })
+    user: async (parent, _, context) => {
+      if ((parent as any).user) return (parent as any).user;
+      const loaders = Loaders.getInstance();
+      return loaders.userLoader.load(parent.userId);
     },
-    address: async (parent) => {
-      if (!parent.addressId) {
-        throw new GraphQLError(
-          `Inconsistência: Pedido ${parent.id} sem addressId.`
-        )
-      }
-
-      const address = await prisma.address.findUnique({
-        where: { id: parent.addressId },
-      })
-      if (!address) {
-        throw new GraphQLError(
-          `Endereço não encontrado para o pedido ${parent.id}`
-        )
-      }
-      return address
+    address: async (parent, _, context) => {
+      if ((parent as any).address) return (parent as any).address;
+      if (!parent.addressId) return null;
+      const loaders = Loaders.getInstance();
+      return loaders.addressLoader.load(parent.addressId);
     },
-    items: (parent) => {
-      return prisma.orderItem.findMany({ where: { orderId: parent.id } })
+    items: async (parent, _, context) => {
+      if ((parent as any).items) return (parent as any).items;
+      return context.prisma.orderItem.findMany({ 
+        where: { orderId: parent.id },
+        include: { product: true },
+      });
     },
-    payment: (parent) => {
-      return prisma.payment.findUnique({ where: { orderId: parent.id } })
+    payment: async (parent, _, context) => {
+      if ((parent as any).payment) return (parent as any).payment;
+      return context.prisma.payment.findUnique({ where: { orderId: parent.id } });
     },
-    delivery: (parent) => {
-      return prisma.delivery.findUnique({ where: { orderId: parent.id } })
+    delivery: async (parent, _, context) => {
+      if ((parent as any).delivery) return (parent as any).delivery;
+      return context.prisma.delivery.findUnique({ where: { orderId: parent.id } });
     },
   },
   OrderItem: {
-    product: (parent) => {
-      return prisma.product.findUniqueOrThrow({
-        where: { id: parent.productId },
-      })
+    product: async (parent, _, context) => {
+      if ((parent as any).product) return (parent as any).product;
+      const loaders = Loaders.getInstance();
+      return loaders.productLoader.load(parent.productId);
     },
   },
-}
+};

@@ -5,14 +5,24 @@ export interface IbgeState {
 }
 
 export default async function getStates(): Promise<IbgeState[]> {
-	const response = await fetch(
-		'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome',
-	);
+	try {
+		const response = await fetch(
+			'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome',
+			{
+				cache: 'force-cache',
+			},
+		);
 
-	if (!response.ok) {
-		throw new Error('Error ao buscar dados do IBGE');
+		if (!response.ok) {
+			console.error('Erro ao buscar dados do IBGE');
+			return [];
+		}
+
+		const states: IbgeState[] = await response.json();
+
+		return states;
+	} catch (error) {
+		console.error('Erro ao buscar dados do IBGE:', error);
+		return [];
 	}
-	const states: IbgeState[] = await response.json();
-
-	return states;
 }
