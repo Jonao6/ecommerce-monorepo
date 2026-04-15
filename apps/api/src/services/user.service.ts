@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { PrismaClient, User } from '../../prisma/generated/client/client.js';
 import type { IUserRepository, IPasswordService, ITokenService } from '../interfaces/index.js';
+import { Role } from '@/utils/rbac.js';
 
 export class UserService {
   constructor(
@@ -66,7 +67,7 @@ export class UserService {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: user.role as Role,
     });
 
     return {

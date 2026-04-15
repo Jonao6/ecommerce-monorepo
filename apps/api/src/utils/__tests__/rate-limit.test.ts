@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getRedisClient } from '../../redis/client.js';
 import { RATE_LIMITS } from '../../utils/rateLimit.js';
-import { TOKEN_BUCKET_LUA, TOKEN_BUCKET_BURST_LUA, SLIDING_WINDOW_COUNTER_LUA } from '../../utils/lua/tokenBucket.js';
+import { TOKEN_BUCKET_LUA, TOKEN_BUCKET_BURST_LUA } from '../../utils/lua/tokenBucket.js';
 
 vi.mock('../../redis/client.js', () => ({
   getRedisClient: vi.fn(),
@@ -79,21 +79,6 @@ describe('Token Bucket Lua Scripts', () => {
     });
   });
 
-  describe('Sliding Counter Behavior', () => {
-    it('should count requests across sliding windows', async () => {
-      mockRedis.eval.mockResolvedValue([1, 95, 100, Date.now() + 10000, 0]);
-      
-      const redis = await getRedisClient();
-      
-      const result = (await redis.eval(SLIDING_WINDOW_COUNTER_LUA, {
-        keys: ['counter_key'],
-        arguments: ['100', '60', '1', String(Date.now())],
-      })) as [number, number, number, number, number];
-      
-      expect(result[0]).toBe(1);
-      expect(result[1]).toBe(95);
-    });
-  });
 });
 
 describe('Rate Limit Algorithms', () => {

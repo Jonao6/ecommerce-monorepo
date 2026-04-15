@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { Role } from '@/utils/rbac.js';
 import type { ITokenService, TokenPayload } from '../interfaces/index.js';
 
 export class AuthService {
@@ -8,9 +8,10 @@ export class AuthService {
     userId: string,
     email: string,
     name: string,
-    role: string,
+    role: Role,
     redisClient: { set: (key: string, value: string, options?: { EX: number }) => Promise<void>; del: (key: string) => Promise<void>; get: (key: string) => Promise<string | null> }
   ): Promise<{ accessToken: string; refreshToken: string }> {
+
     const tokens = this.tokenService.generateTokens({
       id: userId,
       email,

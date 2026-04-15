@@ -10,8 +10,8 @@ export interface TokenPayload {
   email: string;
   name: string;
   role: Role;
-  iat: number;
-  exp: number;
+  iat?: number;
+  exp?: number;
 }
 
 export interface ITokenService {
