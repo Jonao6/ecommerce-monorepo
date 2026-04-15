@@ -20,7 +20,7 @@ export const useLoginMutation = () => {
 				variables: { input },
 			});
 		},
-		[mutate]
+		[mutate],
 	);
 
 	return {
@@ -31,5 +31,8 @@ export const useLoginMutation = () => {
 };
 
 export type LoginResult =
-	| { success: true; user: { id: string; name: string; email: string; role: string } }
+	| {
+			success: true;
+			user: { id: string; name: string; email: string; role: string };
+	  }
 	| { success: false; error: Error };

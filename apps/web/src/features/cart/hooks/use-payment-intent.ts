@@ -18,7 +18,7 @@ export const usePaymentIntentMutation = () => {
 				variables: { input },
 			});
 		},
-		[mutate]
+		[mutate],
 	);
 
 	return {
@@ -33,7 +33,8 @@ export type PaymentIntentResult =
 	| { success: false; error: Error };
 
 export const useCreatePaymentIntent = () => {
-	const { createPaymentIntentMutation, loading, error } = usePaymentIntentMutation();
+	const { createPaymentIntentMutation, loading, error } =
+		usePaymentIntentMutation();
 
 	const createPaymentIntent = async ({
 		orderId,
@@ -49,7 +50,9 @@ export const useCreatePaymentIntent = () => {
 			if (!secret) {
 				return {
 					success: false,
-					error: new Error('O gateway de pagamento não retornou uma chave válida.'),
+					error: new Error(
+						'O gateway de pagamento não retornou uma chave válida.',
+					),
 				};
 			}
 
@@ -57,7 +60,10 @@ export const useCreatePaymentIntent = () => {
 		} catch (err) {
 			return {
 				success: false,
-				error: err instanceof Error ? err : new Error('Erro desconhecido ao criar pagamento'),
+				error:
+					err instanceof Error
+						? err
+						: new Error('Erro desconhecido ao criar pagamento'),
 			};
 		}
 	};

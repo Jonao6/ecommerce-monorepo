@@ -23,7 +23,7 @@ type Documents = {
 	'\n\tmutation CreateOrder($input: CreateOrderInput!) {\n\t\tcreateOrder(input: $input) {\n\t\t\tid\n\t\t\tstatus\n\t\t\tcreatedAt\n\t\t}\n\t}\n': typeof types.CreateOrderDocument;
 	'\n\tquery Order($orderId: ID!) {\n\t\torder(id: $orderId) {\n\t\t\tpayment {\n\t\t\t\tpaymentStatus\n\t\t\t}\n\t\t}\n\t}\n': typeof types.OrderDocument;
 	'\n\tmutation DeleteAddress($deleteAddressId: ID!) {\n\t\tdeleteAddress(id: $deleteAddressId)\n\t}\n': typeof types.DeleteAddressDocument;
-	'\n\tquery UserAddresses {\n\t\tuserAddresses{\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n': typeof types.UserAddressesDocument;
+	'\n\tquery UserAddresses {\n\t\tuserAddresses {\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n': typeof types.UserAddressesDocument;
 	'\n\tquery UserOrders {\n\t\tuserOrders {\n\t\t\tid\n\t\t\tstatus\n\t\t\ttotalAmount\n\t\t\tpayment {\n\t\t\t\tpaymentMethod\n\t\t\t\tpaymentStatus\n\t\t\t\tpaidAt\n\t\t\t}\n\t\t\tdelivery {\n\t\t\t\tstatus\n\t\t\t}\n\t\t}\n\t}\n': typeof types.UserOrdersDocument;
 	'\n\tquery Categories {\n\t\tcategories {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n': typeof types.CategoriesDocument;
 	'\n\tquery Category($name: String!) {\n\t\tcategory(name: $name) {\n\t\t\tproducts {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t\tprice\n\t\t\t\tdescription\n\t\t\t\timage\n\t\t\t\tcategory {\n\t\t\t\t\tname\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n': typeof types.CategoryDocument;
@@ -51,7 +51,7 @@ const documents: Documents = {
 		types.OrderDocument,
 	'\n\tmutation DeleteAddress($deleteAddressId: ID!) {\n\t\tdeleteAddress(id: $deleteAddressId)\n\t}\n':
 		types.DeleteAddressDocument,
-	'\n\tquery UserAddresses {\n\t\tuserAddresses{\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n':
+	'\n\tquery UserAddresses {\n\t\tuserAddresses {\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n':
 		types.UserAddressesDocument,
 	'\n\tquery UserOrders {\n\t\tuserOrders {\n\t\t\tid\n\t\t\tstatus\n\t\t\ttotalAmount\n\t\t\tpayment {\n\t\t\t\tpaymentMethod\n\t\t\t\tpaymentStatus\n\t\t\t\tpaidAt\n\t\t\t}\n\t\t\tdelivery {\n\t\t\t\tstatus\n\t\t\t}\n\t\t}\n\t}\n':
 		types.UserOrdersDocument,
@@ -142,8 +142,8 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-	source: '\n\tquery UserAddresses {\n\t\tuserAddresses{\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n',
-): (typeof documents)['\n\tquery UserAddresses {\n\t\tuserAddresses{\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n'];
+	source: '\n\tquery UserAddresses {\n\t\tuserAddresses {\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n',
+): (typeof documents)['\n\tquery UserAddresses {\n\t\tuserAddresses {\n\t\t\tcity\n\t\t\tcomplements\n\t\t\tcountry\n\t\t\tcreatedAt\n\t\t\tid\n\t\t\tneighbor\n\t\t\tpostalCode\n\t\t\tstate\n\t\t\tstreet\n\t\t\tstreetNumber\n\t\t}\n\t}\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

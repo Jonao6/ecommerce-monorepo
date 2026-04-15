@@ -20,7 +20,7 @@ export const useOrderMutation = () => {
 				variables: { input },
 			});
 		},
-		[mutate]
+		[mutate],
 	);
 
 	return {
@@ -29,7 +29,9 @@ export const useOrderMutation = () => {
 	};
 };
 
-export const mapCartItemsToOrderInput = (items: CartItem[]): CreateOrderInput['items'] => {
+export const mapCartItemsToOrderInput = (
+	items: CartItem[],
+): CreateOrderInput['items'] => {
 	return items.map((item) => ({
 		productId: item.id,
 		quantity: item.quantity,
