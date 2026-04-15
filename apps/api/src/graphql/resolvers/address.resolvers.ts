@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql"
 import { prisma } from "../../lib/index.js"
 import { Resolvers } from "../types.js"
-import { Context } from "../../server/context.js"
+import { ServerContext } from "@/server/context.js"
 import { removeNulls } from "@/utils/cleanInput.js"
 import { requireOwnershipOrPermission, requirePermission } from "../../utils/auth.js"
 import { Permission } from "../../utils/rbac.js"
@@ -13,12 +13,12 @@ import {
 
 export const addressResolvers: Resolvers = {
   Query: {
-    adminAddresses: async (_: any, __: any, context: Context) => {
+    adminAddresses: async (_: any, __: any, context: ServerContext) => {
       const user = requirePermission(Permission.READ_ALL_ADDRESSES)(context);
       return await context.prisma.address.findMany();
     },
 
-    address: async (_: any, { id }: { id: string }, context: Context) => {
+    address: async (_: any, { id }: { id: string }, context: ServerContext) => {
       const user = requirePermission(Permission.READ_OWN_ADDRESSES)(context);
       const address = await prisma.address.findUnique({
         where: { id: Number(id) },
@@ -34,7 +34,7 @@ export const addressResolvers: Resolvers = {
       return address;
     },
 
-    userAddresses: async (_: any, __: any, context: Context) => {
+    userAddresses: async (_: any, __: any, context: ServerContext) => {
       const user = requirePermission(Permission.READ_OWN_ADDRESSES)(context);
       
       return await context.prisma.address.findMany({

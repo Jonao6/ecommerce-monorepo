@@ -2,9 +2,7 @@ import { serve } from "@hono/node-server"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
-import type {Context as HonoContext} from "hono"
-import type { YogaInitialContext } from "graphql-yoga"
-import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { getCookie, setCookie } from "hono/cookie"
 import { createYoga, createSchema } from "graphql-yoga"
 import { GraphQLError } from "graphql"
 import jwt from "jsonwebtoken"
@@ -17,11 +15,24 @@ import {
   RATE_LIMITS,
   applyRateLimit,
   RateLimitUtils,
+  type RateLimitInfo,
 } from "../utils/rateLimit.js"
-import { ServerContext, UserPayload } from "./context.js"
+
 const app = new Hono()
 const PORT = process.env.PORT || 4000
 let _stripe: Stripe | null = null
+
+function getCookies(request: Request): Record<string, string> {
+  const cookieHeader = request.headers.get("cookie") || ""
+  const cookies: Record<string, string> = {}
+  cookieHeader.split(";").forEach((cookie) => {
+    const [key, value] = cookie.trim().split("=")
+    if (key && value) {
+      cookies[key] = decodeURIComponent(value)
+    }
+  })
+  return cookies
+}
 
 const getStripe = (): Stripe => {
   if (!_stripe) {
@@ -67,10 +78,6 @@ app.use("*", async (c, next) => {
   const userAgent = c.req.header("user-agent") || "unknown"
   const path = c.req.path
 
-  console.log(
-    `${timestamp} - ${c.req.method} ${path} - IP: ${ip} - User-Agent: ${userAgent}`,
-  )
-
   if (
     path.includes("..") ||
     path.includes("<script>") ||
@@ -84,79 +91,6 @@ app.use("*", async (c, next) => {
   await next()
 })
 
-function parseCookies(request: Request): Record<string, string> {
-  const cookieHeader = request.headers.get("cookie") || ""
-  const cookies: Record<string, string> = {}
-  cookieHeader.split(";").forEach((cookie) => {
-    const [key, value] = cookie.trim().split("=")
-    if (key && value) {
-      cookies[key] = decodeURIComponent(value)
-    }
-  })
-  return cookies
-}
-
-function verifyToken(token: string): UserPayload {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload
-    if (!decoded.id || !decoded.email) {
-      throw new GraphQLError("Invalid token payload", {
-        extensions: { code: "INVALID_TOKEN" },
-      })
-    }
-    return decoded
-  } catch {
-    throw new GraphQLError("Invalid or expired token", {
-      extensions: { code: "INVALID_TOKEN" },
-    })
-  }
-}
-
-function extractUser(request: Request): UserPayload | null {
-  const authHeader = request.headers.get("authorization") || ""
-  if (authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1]
-    try {
-      return verifyToken(token)
-    } catch {}
-  }
-
-  const cookies = parseCookies(request)
-  const accessToken = cookies["accessToken"]
-  if (accessToken) {
-    try {
-      return verifyToken(accessToken)
-    } catch {}
-  }
-
-  return null
-}
-
-async function generateAccessToken(refreshToken: string) {
-  const redis = await getRedisClient()
-  const userId = await redis.get(`refresh_${refreshToken}`)
-  if (!userId || typeof userId !== "string") return null
-
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) return null
-
-  const newAccessToken = jwt.sign(
-    { id: user.id, email: user.email, name: user.name, role: user.role },
-    process.env.JWT_SECRET!,
-    { expiresIn: "15m" },
-  )
-
-  return { token: newAccessToken, user }
-}
-
-const sanitizeUser = (user: any) => ({
-  id: user.id,
-  email: user.email,
-  name: user.name,
-  role: user.role,
-})
-
-// Stripe webhook
 app.post("/webhook", async (c) => {
   const sig = c.req.header("stripe-signature")
   const body = await c.req.arrayBuffer()
@@ -224,47 +158,58 @@ app.get("/me", async (c) => {
   const accessToken = getCookie(c, "accessToken")
   const refreshToken = getCookie(c, "refreshToken")
 
-  if (!accessToken) {
-    if (!refreshToken) {
-      c.status(401)
-      return c.json({ ok: false })
-    }
-    const result = await generateAccessToken(refreshToken)
-    if (!result) {
-      c.status(401)
-      return c.json({ ok: false })
-    }
-    setCookie(c, "accessToken", result.token, {
+  const generateNewAccessToken = async () => {
+    if (!refreshToken) return null
+    const redis = await getRedisClient()
+    const userId = await redis.get(`refresh_${refreshToken}`)
+    if (!userId || typeof userId !== "string") return null
+
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) return null
+
+    const newAccessToken = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: "15m" },
+    )
+
+    setCookie(c, "accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60,
       sameSite: "none",
       path: "/",
     })
-    return c.json({ ok: true, user: sanitizeUser(result.user) })
+
+    return user
+  }
+
+  const sanitizeUser = (user: any) => ({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  })
+
+  if (!accessToken) {
+    const user = await generateNewAccessToken()
+    if (!user) {
+      c.status(401)
+      return c.json({ ok: false })
+    }
+    return c.json({ ok: true, user: sanitizeUser(user) })
   }
 
   try {
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET!)
     return c.json({ ok: true, user: decoded })
   } catch {
-    if (!refreshToken) {
+    const user = await generateNewAccessToken()
+    if (!user) {
       c.status(401)
       return c.json({ ok: false })
     }
-    const result = await generateAccessToken(refreshToken)
-    if (!result) {
-      c.status(401)
-      return c.json({ ok: false })
-    }
-    setCookie(c, "accessToken", result.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 15 * 60,
-      sameSite: "none",
-      path: "/",
-    })
-    return c.json({ ok: true, user: sanitizeUser(result.user) })
+    return c.json({ ok: true, user: sanitizeUser(user) })
   }
 })
 
@@ -283,7 +228,7 @@ app.get("/admin/rate-limit-metrics", async (c) => {
       metrics,
       timestamp: new Date().toISOString(),
     })
-  } catch {
+  } catch (error) {
     c.status(500)
     return c.json({ error: "Failed to fetch metrics" })
   }
@@ -305,42 +250,89 @@ app.post("/admin/clear-rate-limit", async (c) => {
   try {
     await RateLimitUtils.clearRateLimit(identifier)
     return c.json({ message: `Rate limit cleared for ${identifier}` })
-  } catch {
+  } catch (error) {
     c.status(500)
     return c.json({ error: "Failed to clear rate limit" })
   }
 })
 
-const schema = createSchema<ServerContext>({
-  typeDefs,
-  resolvers,
-})
+type UserPayload = {
+  id: string
+  email: string
+  name?: string
+  role: string
+  iat: number
+  exp: number
+}
 
-const yoga = createYoga<ServerContext>({
-  schema,
+function verifyToken(token: string): UserPayload {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as UserPayload
+    if (!decoded.id || !decoded.email) {
+      throw new GraphQLError("Invalid token payload", {
+        extensions: { code: "INVALID_TOKEN" },
+      })
+    }
+    return decoded
+  } catch (error: any) {
+    throw new GraphQLError("Invalid or expired token", {
+      extensions: { code: "INVALID_TOKEN" },
+    })
+  }
+}
+
+const yoga: any = createYoga({
+  schema: createSchema({
+    typeDefs,
+    resolvers,
+  }) as any,
   graphqlEndpoint: "/graphql",
-  context: async (serverContext: { hono: HonoContext }): Promise<ServerContext> => {
-    const { hono: c } = serverContext;
-    
-    let user: UserPayload | null = null;
-    const token = getCookie(c, 'accessToken') || c.req.header('authorization')?.replace('Bearer ', '');
-    
-    if (token) {
-      try { user = verifyToken(token); } catch { user = null; }
+  context: async ({ request }: { request: Request }) => {
+    let user: UserPayload | null = null
+
+    const authHeader = request.headers.get("authorization") || ""
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1]
+      try {
+        user = verifyToken(token)
+      } catch {
+        user = null
+      }
+    }
+
+    if (!user) {
+      const cookies = getCookies(request)
+      const accessToken = cookies["accessToken"]
+      if (accessToken) {
+        try {
+          user = verifyToken(accessToken)
+        } catch {
+          user = null
+        }
+      }
     }
 
     return {
-      c,
+      req: request,
       prisma,
       user,
-      req: c.req.raw,
-      res: c.res,
-      setCookie: (name, value, options) => setCookie(c, name, value, options),
-      clearCookie: (name) => deleteCookie(c, name),
-      getCookie: (name) => getCookie(c, name),
-    };
+      async applyRateLimit(
+        type: keyof typeof RATE_LIMITS = "GENERAL",
+      ): Promise<RateLimitInfo> {
+        const headers = request.headers
+        const identifier = headers.get("x-forwarded-for") || "unknown"
+        return await applyRateLimit({ req: { ip: identifier } }, type)
+      },
+      RateLimitUtils: {
+        getMetrics: () => RateLimitUtils.getMetrics,
+        clearRateLimit: (identifier: string) =>
+          RateLimitUtils.clearRateLimit(identifier),
+        getRateLimitInfo: (identifier: string, windowMs: number) =>
+          RateLimitUtils.getRateLimitInfo(identifier, windowMs),
+      },
+    }
   },
-});
+})
 
 app.use("/graphql", async (c, next) => {
   try {
@@ -370,18 +362,27 @@ app.use("/graphql", async (c, next) => {
 })
 
 app.all("/graphql", async (c) => {
-  const response = await yoga.handleRequest(c.req.raw, { hono: c } as any);
+  const url = new URL(c.req.url)
+  const request = new Request(url.toString(), {
+    method: c.req.method,
+    headers: c.req.header(),
+    body: ["GET", "HEAD"].includes(c.req.method)
+      ? undefined
+      : await c.req.text(),
+  })
 
-  c.res.headers.forEach((value, key) => {
-    if (key.toLowerCase() === 'set-cookie') {
-      response.headers.append(key, value);
-    } else {
-      response.headers.set(key, value);
-    }
-  });
+  const response = await (yoga as any).handleRequest(request)
 
-  return response;
-});
+  const responseHeaders: Record<string, string> = {}
+  response.headers.forEach((value: string, key: string) => {
+    responseHeaders[key] = value
+  })
+
+  return new Response(response.body, {
+    status: response.status,
+    headers: responseHeaders,
+  })
+})
 
 console.log(`Server starting on http://localhost:${PORT}`)
 console.log(`GraphQL endpoint: http://localhost:${PORT}/graphql`)

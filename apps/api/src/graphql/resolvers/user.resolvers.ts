@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql"
-import { Context } from "../../server/context.js"
+import { ServerContext } from "@/server/context.js"
 import { getRedisClient } from "../../redis/client.js"
 import { Resolvers } from "../types.js"
 import { removeNulls } from "@/utils/cleanInput.js"
@@ -29,7 +29,7 @@ const userService = new UserService(prisma, userRepository, passwordService, tok
 
 export const userResolvers: Resolvers = {
   Query: {
-    adminUsers: async (_: any, __: any, context: Context) => {
+    adminUsers: async (_: any, __: any, context: ServerContext) => {
       requireAdmin(context)
       return context.prisma.user.findMany({
         include: {
@@ -46,7 +46,7 @@ export const userResolvers: Resolvers = {
       }) as any
     },
 
-    user: async (_: any, { email }: { email: string }, context: Context) => {
+    user: async (_: any, { email }: { email: string }, context: ServerContext) => {
       const user = requireAuth(context)
 
       const foundUser = await userService.findByEmail(email)
@@ -65,7 +65,7 @@ export const userResolvers: Resolvers = {
       return foundUser as any
     },
 
-    me: async (_: any, __: any, context: Context): Promise<any> => {
+    me: async (_: any, __: any, context: ServerContext): Promise<any> => {
       const user = requireAuth(context)
       return user
     },
@@ -74,7 +74,7 @@ export const userResolvers: Resolvers = {
     createUser: async (
       _: any,
       { input }: { input: { email: string; password: string; name: string } },
-      context: Context,
+      context: ServerContext,
     ) => {
       if (!validateEmail(input.email)) {
         throw new GraphQLError("Invalid email format", {
@@ -98,7 +98,7 @@ export const userResolvers: Resolvers = {
     getUser: async (
       _: any,
       { input }: { input: { email: string; password: string } },
-      context: Context,
+      context: ServerContext,
     ) => {
       const result = await userService.login(input.email, input.password)
 
@@ -107,17 +107,17 @@ export const userResolvers: Resolvers = {
         EX: 30 * 24 * 60 * 60,
       })
 
-      context.res.cookie("accessToken", result.accessToken, {
+      context.setCookie("accessToken", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60 * 1000,
+        maxAge: 15 * 60,
         sameSite: "none",
         path: "/",
       })
-      context.res.cookie("refreshToken", result.refreshToken, {
+      context.setCookie("refreshToken", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60,
         sameSite: "none",
         path: "/",
       })
@@ -128,19 +128,19 @@ export const userResolvers: Resolvers = {
       }
     },
 
-    logout: async (_: any, __: any, context: Context) => {
-      const refreshToken = context.req.cookies.refreshToken
+    logout: async (_: any, __: any, context: ServerContext) => {
+      const refreshToken = context.getCookie("refreshToken")
       if (refreshToken) {
         const redis = await getRedisClient()
         await redis.del(`refresh_${refreshToken}`)
       }
 
-      context.res.clearCookie("accessToken")
-      context.res.clearCookie("refreshToken")
+      context.clearCookie("accessToken")
+      context.clearCookie("refreshToken")
       return true
     },
 
-    updateUser: async (_: any, { input }, context: Context) => {
+    updateUser: async (_: any, { input }, context: ServerContext) => {
       const user = requireAuth(context)
 
       if (input.email && !validateEmail(input.email)) {
@@ -158,7 +158,7 @@ export const userResolvers: Resolvers = {
 
       return userService.update(user.id, dataCleaned) as any
     },
-    deleteUser: async (_: any, { id }, context: Context) => {
+    deleteUser: async (_: any, { id }, context: ServerContext) => {
       requireAuth(context)
 
       requireOwnershipOrPermission(Permission.DELETE_ANY_USER)(context, id)

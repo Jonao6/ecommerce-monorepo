@@ -1,6 +1,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import type { ITokenService, TokenPayload } from '../interfaces/index.js';
+import { Role } from '@/utils/rbac.js';
 
 export class JwtTokenService implements ITokenService {
   private readonly jwtSecret: string;
@@ -34,7 +35,9 @@ export class JwtTokenService implements ITokenService {
       id: payload.id as string,
       email: payload.email as string,
       name: payload.name as string,
-      role: payload.role as string,
+      role: payload.role as Role,
+      iat: payload.iat as number,
+      exp: payload.exp as number,
     };
   }
 

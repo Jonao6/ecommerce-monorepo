@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import { User as UserModel, Product as ProductModel, Order as OrderModel, Payment as PaymentModel, Category as CategoryModel, Address as AddressModel, OrderItem as OrderItemModel, Delivery as DeliveryModel } from '../../prisma/generated/client/client.js';
-import { Context } from '../server/context.js';
+import { ServerContext } from '../server/context.js'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = T | null | undefined;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -420,65 +420,65 @@ export type ResolversObject<TObject> = WithIndex<TObject>;
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
 
-export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
+export type ResolverWithResolve<TResult, TParent, TServerContext, TArgs> = {
+  resolve: ResolverFn<TResult, TParent, TServerContext, TArgs>;
 };
-export type Resolver<TResult, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
+export type Resolver<TResult, TParent = Record<PropertyKey, never>, TServerContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = ResolverFn<TResult, TParent, TServerContext, TArgs> | ResolverWithResolve<TResult, TParent, TServerContext, TArgs>;
 
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
+export type ResolverFn<TResult, TParent, TServerContext, TArgs> = (
   parent: TParent,
   args: TArgs,
-  context: TContext,
+  ServerContext: TServerContext,
   info: GraphQLResolveInfo
 ) => Promise<TResult> | TResult;
 
-export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
+export type SubscriptionSubscribeFn<TResult, TParent, TServerContext, TArgs> = (
   parent: TParent,
   args: TArgs,
-  context: TContext,
+  ServerContext: TServerContext,
   info: GraphQLResolveInfo
 ) => AsyncIterable<TResult> | Promise<AsyncIterable<TResult>>;
 
-export type SubscriptionResolveFn<TResult, TParent, TContext, TArgs> = (
+export type SubscriptionResolveFn<TResult, TParent, TServerContext, TArgs> = (
   parent: TParent,
   args: TArgs,
-  context: TContext,
+  ServerContext: TServerContext,
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
-export interface SubscriptionSubscriberObject<TResult, TKey extends string, TParent, TContext, TArgs> {
-  subscribe: SubscriptionSubscribeFn<{ [key in TKey]: TResult }, TParent, TContext, TArgs>;
-  resolve?: SubscriptionResolveFn<TResult, { [key in TKey]: TResult }, TContext, TArgs>;
+export interface SubscriptionSubscriberObject<TResult, TKey extends string, TParent, TServerContext, TArgs> {
+  subscribe: SubscriptionSubscribeFn<{ [key in TKey]: TResult }, TParent, TServerContext, TArgs>;
+  resolve?: SubscriptionResolveFn<TResult, { [key in TKey]: TResult }, TServerContext, TArgs>;
 }
 
-export interface SubscriptionResolverObject<TResult, TParent, TContext, TArgs> {
-  subscribe: SubscriptionSubscribeFn<any, TParent, TContext, TArgs>;
-  resolve: SubscriptionResolveFn<TResult, any, TContext, TArgs>;
+export interface SubscriptionResolverObject<TResult, TParent, TServerContext, TArgs> {
+  subscribe: SubscriptionSubscribeFn<any, TParent, TServerContext, TArgs>;
+  resolve: SubscriptionResolveFn<TResult, any, TServerContext, TArgs>;
 }
 
-export type SubscriptionObject<TResult, TKey extends string, TParent, TContext, TArgs> =
-  | SubscriptionSubscriberObject<TResult, TKey, TParent, TContext, TArgs>
-  | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>;
+export type SubscriptionObject<TResult, TKey extends string, TParent, TServerContext, TArgs> =
+  | SubscriptionSubscriberObject<TResult, TKey, TParent, TServerContext, TArgs>
+  | SubscriptionResolverObject<TResult, TParent, TServerContext, TArgs>;
 
-export type SubscriptionResolver<TResult, TKey extends string, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> =
-  | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
-  | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
+export type SubscriptionResolver<TResult, TKey extends string, TParent = Record<PropertyKey, never>, TServerContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> =
+  | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TServerContext, TArgs>)
+  | SubscriptionObject<TResult, TKey, TParent, TServerContext, TArgs>;
 
-export type TypeResolveFn<TTypes, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (
+export type TypeResolveFn<TTypes, TParent = Record<PropertyKey, never>, TServerContext = Record<PropertyKey, never>> = (
   parent: TParent,
-  context: TContext,
+  ServerContext: TServerContext,
   info: GraphQLResolveInfo
 ) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
 
-export type IsTypeOfResolverFn<T = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
+export type IsTypeOfResolverFn<T = Record<PropertyKey, never>, TServerContext = Record<PropertyKey, never>> = (obj: T, ServerContext: TServerContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
 
 export type NextResolverFn<T> = () => Promise<T>;
 
-export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = (
+export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = Record<PropertyKey, never>, TServerContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = (
   next: NextResolverFn<TResult>,
   parent: TParent,
   args: TArgs,
-  context: TContext,
+  ServerContext: TServerContext,
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
@@ -559,30 +559,30 @@ export type ResolversParentTypes = ResolversObject<{
   User: UserModel;
 }>;
 
-export type AddressResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = ResolversObject<{
-  city?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  complements?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  neighbor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  postalCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  street?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  streetNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type AddressResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = ResolversObject<{
+  city?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  complements?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  country?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  neighbor?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  postalCode?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  street?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  streetNumber?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ServerContextType>;
 }>;
 
-export type AuthPayloadResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AuthPayload'] = ResolversParentTypes['AuthPayload']> = ResolversObject<{
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type AuthPayloadResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['AuthPayload'] = ResolversParentTypes['AuthPayload']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ServerContextType>;
 }>;
 
-export type CategoryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = ResolversObject<{
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
+export type CategoryResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = ResolversObject<{
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ServerContextType>;
 }>;
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
@@ -593,134 +593,134 @@ export interface DecimalScalarConfig extends GraphQLScalarTypeConfig<ResolversTy
   name: 'Decimal';
 }
 
-export type DeliveryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Delivery'] = ResolversParentTypes['Delivery']> = ResolversObject<{
-  deliveredAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  order?: Resolver<ResolversTypes['Order'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['DeliveryStatus'], ParentType, ContextType>;
-  trackingNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type DeliveryResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Delivery'] = ResolversParentTypes['Delivery']> = ResolversObject<{
+  deliveredAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  order?: Resolver<ResolversTypes['Order'], ParentType, ServerContextType>;
+  status?: Resolver<ResolversTypes['DeliveryStatus'], ParentType, ServerContextType>;
+  trackingNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ServerContextType>;
 }>;
 
-export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createAddress?: Resolver<ResolversTypes['Address'], ParentType, ContextType, RequireFields<MutationCreateAddressArgs, 'input'>>;
-  createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'name'>>;
-  createOrder?: Resolver<ResolversTypes['Order'], ParentType, ContextType, RequireFields<MutationCreateOrderArgs, 'input'>>;
-  createPaymentIntent?: Resolver<ResolversTypes['PaymentIntentResponse'], ParentType, ContextType, RequireFields<MutationCreatePaymentIntentArgs, 'input'>>;
-  createProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
-  createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
-  deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressArgs, 'id'>>;
-  deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
-  deleteOrder?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteOrderArgs, 'id'>>;
-  deleteProduct?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
-  deleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
-  getUser?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationGetUserArgs, 'input'>>;
-  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  processPayment?: Resolver<ResolversTypes['Payment'], ParentType, ContextType, RequireFields<MutationProcessPaymentArgs, 'orderId' | 'paymentMethod'>>;
-  updateAddress?: Resolver<ResolversTypes['Address'], ParentType, ContextType, RequireFields<MutationUpdateAddressArgs, 'id' | 'input'>>;
-  updateCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'id' | 'name'>>;
-  updateOrderAddress?: Resolver<ResolversTypes['Order'], ParentType, ContextType, RequireFields<MutationUpdateOrderAddressArgs, 'id' | 'input'>>;
-  updateOrderStatus?: Resolver<ResolversTypes['Order'], ParentType, ContextType, RequireFields<MutationUpdateOrderStatusArgs, 'id' | 'input'>>;
-  updateProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductArgs, 'id' | 'input'>>;
-  updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
+export type MutationResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createAddress?: Resolver<ResolversTypes['Address'], ParentType, ServerContextType, RequireFields<MutationCreateAddressArgs, 'input'>>;
+  createCategory?: Resolver<ResolversTypes['Category'], ParentType, ServerContextType, RequireFields<MutationCreateCategoryArgs, 'name'>>;
+  createOrder?: Resolver<ResolversTypes['Order'], ParentType, ServerContextType, RequireFields<MutationCreateOrderArgs, 'input'>>;
+  createPaymentIntent?: Resolver<ResolversTypes['PaymentIntentResponse'], ParentType, ServerContextType, RequireFields<MutationCreatePaymentIntentArgs, 'input'>>;
+  createProduct?: Resolver<ResolversTypes['Product'], ParentType, ServerContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
+  createUser?: Resolver<ResolversTypes['User'], ParentType, ServerContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
+  deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType, RequireFields<MutationDeleteAddressArgs, 'id'>>;
+  deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
+  deleteOrder?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType, RequireFields<MutationDeleteOrderArgs, 'id'>>;
+  deleteProduct?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
+  deleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
+  getUser?: Resolver<ResolversTypes['AuthPayload'], ParentType, ServerContextType, RequireFields<MutationGetUserArgs, 'input'>>;
+  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType>;
+  processPayment?: Resolver<ResolversTypes['Payment'], ParentType, ServerContextType, RequireFields<MutationProcessPaymentArgs, 'orderId' | 'paymentMethod'>>;
+  updateAddress?: Resolver<ResolversTypes['Address'], ParentType, ServerContextType, RequireFields<MutationUpdateAddressArgs, 'id' | 'input'>>;
+  updateCategory?: Resolver<ResolversTypes['Category'], ParentType, ServerContextType, RequireFields<MutationUpdateCategoryArgs, 'id' | 'name'>>;
+  updateOrderAddress?: Resolver<ResolversTypes['Order'], ParentType, ServerContextType, RequireFields<MutationUpdateOrderAddressArgs, 'id' | 'input'>>;
+  updateOrderStatus?: Resolver<ResolversTypes['Order'], ParentType, ServerContextType, RequireFields<MutationUpdateOrderStatusArgs, 'id' | 'input'>>;
+  updateProduct?: Resolver<ResolversTypes['Product'], ParentType, ServerContextType, RequireFields<MutationUpdateProductArgs, 'id' | 'input'>>;
+  updateUser?: Resolver<ResolversTypes['User'], ParentType, ServerContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 }>;
 
-export type OrderResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Order'] = ResolversParentTypes['Order']> = ResolversObject<{
-  address?: Resolver<ResolversTypes['Address'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  delivery?: Resolver<Maybe<ResolversTypes['Delivery']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  items?: Resolver<Array<ResolversTypes['OrderItem']>, ParentType, ContextType>;
-  payment?: Resolver<Maybe<ResolversTypes['Payment']>, ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['OrderStatus'], ParentType, ContextType>;
-  totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type OrderResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Order'] = ResolversParentTypes['Order']> = ResolversObject<{
+  address?: Resolver<ResolversTypes['Address'], ParentType, ServerContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  delivery?: Resolver<Maybe<ResolversTypes['Delivery']>, ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  items?: Resolver<Array<ResolversTypes['OrderItem']>, ParentType, ServerContextType>;
+  payment?: Resolver<Maybe<ResolversTypes['Payment']>, ParentType, ServerContextType>;
+  status?: Resolver<ResolversTypes['OrderStatus'], ParentType, ServerContextType>;
+  totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ServerContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ServerContextType>;
 }>;
 
-export type OrderItemResolvers<ContextType = Context, ParentType extends ResolversParentTypes['OrderItem'] = ResolversParentTypes['OrderItem']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['Product'], ParentType, ContextType>;
-  quantity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+export type OrderItemResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['OrderItem'] = ResolversParentTypes['OrderItem']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  price?: Resolver<ResolversTypes['Float'], ParentType, ServerContextType>;
+  product?: Resolver<ResolversTypes['Product'], ParentType, ServerContextType>;
+  quantity?: Resolver<ResolversTypes['Int'], ParentType, ServerContextType>;
 }>;
 
-export type PaymentResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Payment'] = ResolversParentTypes['Payment']> = ResolversObject<{
-  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  order?: Resolver<ResolversTypes['Order'], ParentType, ContextType>;
-  paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  paymentMethod?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  paymentStatus?: Resolver<ResolversTypes['PaymentStatus'], ParentType, ContextType>;
+export type PaymentResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Payment'] = ResolversParentTypes['Payment']> = ResolversObject<{
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  order?: Resolver<ResolversTypes['Order'], ParentType, ServerContextType>;
+  paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ServerContextType>;
+  paymentMethod?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  paymentStatus?: Resolver<ResolversTypes['PaymentStatus'], ParentType, ServerContextType>;
 }>;
 
-export type PaymentIntentResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PaymentIntentResponse'] = ResolversParentTypes['PaymentIntentResponse']> = ResolversObject<{
-  clientSecret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+export type PaymentIntentResponseResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['PaymentIntentResponse'] = ResolversParentTypes['PaymentIntentResponse']> = ResolversObject<{
+  clientSecret?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
 }>;
 
-export type ProductResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Product'] = ResolversParentTypes['Product']> = ResolversObject<{
-  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
-  categoryId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  colors?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  price?: Resolver<ResolversTypes['Decimal'], ParentType, ContextType>;
-  sizes?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType>;
-  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type ProductResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Product'] = ResolversParentTypes['Product']> = ResolversObject<{
+  category?: Resolver<ResolversTypes['Category'], ParentType, ServerContextType>;
+  categoryId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ServerContextType>;
+  colors?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ServerContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ServerContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  image?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  price?: Resolver<ResolversTypes['Decimal'], ParentType, ServerContextType>;
+  sizes?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ServerContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ServerContextType>;
 }>;
 
-export type ProductsResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['ProductsResponse'] = ResolversParentTypes['ProductsResponse']> = ResolversObject<{
-  currentPage?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
-  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  totalPages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+export type ProductsResponseResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['ProductsResponse'] = ResolversParentTypes['ProductsResponse']> = ResolversObject<{
+  currentPage?: Resolver<ResolversTypes['Int'], ParentType, ServerContextType>;
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ServerContextType>;
+  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ServerContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ServerContextType>;
+  totalPages?: Resolver<ResolversTypes['Int'], ParentType, ServerContextType>;
 }>;
 
-export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType, RequireFields<QueryAddressArgs, 'id'>>;
-  adminAddresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ContextType>;
-  adminOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType>;
-  adminUsers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
-  category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'name'>>;
-  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id'>>;
-  product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
-  products?: Resolver<ResolversTypes['ProductsResponse'], ParentType, ContextType, RequireFields<QueryProductsArgs, 'limit' | 'offset'>>;
-  productsByCategory?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductsByCategoryArgs, 'categoryId'>>;
-  productsBySearch?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductsBySearchArgs, 'term'>>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'email'>>;
-  userAddresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ContextType>;
-  userOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType>;
+export type QueryResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ServerContextType, RequireFields<QueryAddressArgs, 'id'>>;
+  adminAddresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ServerContextType>;
+  adminOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ServerContextType>;
+  adminUsers?: Resolver<Array<ResolversTypes['User']>, ParentType, ServerContextType>;
+  categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ServerContextType>;
+  category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ServerContextType, RequireFields<QueryCategoryArgs, 'name'>>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ServerContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ServerContextType, RequireFields<QueryOrderArgs, 'id'>>;
+  product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ServerContextType, RequireFields<QueryProductArgs, 'id'>>;
+  products?: Resolver<ResolversTypes['ProductsResponse'], ParentType, ServerContextType, RequireFields<QueryProductsArgs, 'limit' | 'offset'>>;
+  productsByCategory?: Resolver<Array<ResolversTypes['Product']>, ParentType, ServerContextType, RequireFields<QueryProductsByCategoryArgs, 'categoryId'>>;
+  productsBySearch?: Resolver<Array<ResolversTypes['Product']>, ParentType, ServerContextType, RequireFields<QueryProductsBySearchArgs, 'term'>>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ServerContextType, RequireFields<QueryUserArgs, 'email'>>;
+  userAddresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ServerContextType>;
+  userOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ServerContextType>;
 }>;
 
-export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  addresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  orders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType>;
+export type UserResolvers<ServerContextType = ServerContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  addresses?: Resolver<Array<ResolversTypes['Address']>, ParentType, ServerContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ServerContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ServerContextType>;
+  orders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ServerContextType>;
 }>;
 
-export type Resolvers<ContextType = Context> = ResolversObject<{
-  Address?: AddressResolvers<ContextType>;
-  AuthPayload?: AuthPayloadResolvers<ContextType>;
-  Category?: CategoryResolvers<ContextType>;
+export type Resolvers<ServerContextType = ServerContext> = ResolversObject<{
+  Address?: AddressResolvers<ServerContextType>;
+  AuthPayload?: AuthPayloadResolvers<ServerContextType>;
+  Category?: CategoryResolvers<ServerContextType>;
   DateTime?: GraphQLScalarType;
   Decimal?: GraphQLScalarType;
-  Delivery?: DeliveryResolvers<ContextType>;
-  Mutation?: MutationResolvers<ContextType>;
-  Order?: OrderResolvers<ContextType>;
-  OrderItem?: OrderItemResolvers<ContextType>;
-  Payment?: PaymentResolvers<ContextType>;
-  PaymentIntentResponse?: PaymentIntentResponseResolvers<ContextType>;
-  Product?: ProductResolvers<ContextType>;
-  ProductsResponse?: ProductsResponseResolvers<ContextType>;
-  Query?: QueryResolvers<ContextType>;
-  User?: UserResolvers<ContextType>;
+  Delivery?: DeliveryResolvers<ServerContextType>;
+  Mutation?: MutationResolvers<ServerContextType>;
+  Order?: OrderResolvers<ServerContextType>;
+  OrderItem?: OrderItemResolvers<ServerContextType>;
+  Payment?: PaymentResolvers<ServerContextType>;
+  PaymentIntentResponse?: PaymentIntentResponseResolvers<ServerContextType>;
+  Product?: ProductResolvers<ServerContextType>;
+  ProductsResponse?: ProductsResponseResolvers<ServerContextType>;
+  Query?: QueryResolvers<ServerContextType>;
+  User?: UserResolvers<ServerContextType>;
 }>;
 
